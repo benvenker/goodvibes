@@ -12,7 +12,7 @@ bindings = [
 
 [[migrations]]
 tag = "v1"
-new_classes = [ "GoodVibes" ]
+new_sqlite_classes = [ "GoodVibes" ]
 
 [observability]
 enabled = true
