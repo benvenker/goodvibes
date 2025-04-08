@@ -87,7 +87,8 @@ export class SplashScreen {
 
     const devCommands = document.createElement('code')
     devCommands.className = 'instruction-code'
-    devCommands.textContent = 'bun i\nbun run --cwd client dev\nbun run --cwd server dev'
+    devCommands.textContent =
+      'bunx tiged benallfree/goodvibes my-new-vibe\nbun i\nbun run --cwd client dev\nbun run --cwd server dev'
 
     const deployTitle = document.createElement('div')
     deployTitle.className = 'instruction-title'
