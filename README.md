@@ -2,6 +2,8 @@
 
 Modern vibecoding Three.js Starter Kit with Cloudflare Deployment
 
+https://github.com/user-attachments/assets/5bf9fdb7-186a-45ea-84f2-ea92c0aa0659
+
 ## Features
 
 - 🚫 Zero dependency (except Three.js)
