@@ -1,12 +1,13 @@
-# GoodVibes
+# 🏝️ GoodVibes
 
-Modern Three.js Starter Kit with Cloudflare Integration
+Modern vibecoding Three.js Starter Kit with Cloudflare Deployment
 
 ## Features
 
-- 🚀 Cloudflare Pages Deployment
+- 🚫 Zero dependency (except Three.js)
+- 🚀 Fast loading from Cloudflare Pages
 - ⚡ Vite + TypeScript
-- 🔌 Cloudflare Workers + Durable Objects
+- 🔌 WebSocket server via Cloudflare Durable Objects
 - 🎮 Three.js Scene Ready
 - 📚 RAG Rules Documentation
 
