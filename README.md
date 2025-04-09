@@ -1,17 +1,17 @@
 # 🏝️ GoodVibes
 
-Modern vibecoding Three.js Starter Kit with Cloudflare Deployment
+Vibescale Three.js Game Starter Kit for Building Multiplayer Web Games
 
 https://github.com/user-attachments/assets/5bf9fdb7-186a-45ea-84f2-ea92c0aa0659
 
 ## Features
 
-- 🚫 Zero dependency (except Three.js)
-- 🚀 Fast loading from Cloudflare Pages
-- ⚡ Vite + TypeScript
-- 🔌 WebSocket server via Cloudflare Durable Objects
-- 🎮 Three.js Scene Ready
-- 📚 RAG Rules Documentation
+- 🎮 Build Multiplayer Web Games Fast
+- 🌐 Real-time WebSocket Networking
+- 🚀 Cloudflare Edge Deployment
+- ⚡ Vite + TypeScript + Three.js
+- 🔌 Durable Objects for Game State
+- 📚 Comprehensive Documentation
 
 ## Getting Started
 

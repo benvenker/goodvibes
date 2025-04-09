@@ -31,7 +31,7 @@ export class SplashScreen {
 
     this.subtitle = document.createElement('h2')
     this.subtitle.className = 'splash-subtitle'
-    this.subtitle.textContent = 'Modern Vibecoding Three.js Starter Kit'
+    this.subtitle.textContent = 'Vibescale Game Starter Kit'
     headerSection.appendChild(this.subtitle)
 
     this.usernameInput = document.createElement('input')
@@ -62,11 +62,11 @@ export class SplashScreen {
     this.featuresContainer.className = 'splash-features'
 
     const features = [
-      '🚀 Cloudflare Pages Deployment',
-      '⚡ Vite + TypeScript',
-      '🔌 Cloudflare Workers + Durable Objects',
-      '🎮 Three.js Scene Ready',
-      '📚 RAG Rules Documentation',
+      '🎮 Build Multiplayer Web Games Fast',
+      '🌐 Real-time WebSocket Networking',
+      '🚀 Cloudflare Edge Deployment',
+      '⚡ Vite + TypeScript + Three.js',
+      '🔌 Durable Objects for Game State',
     ]
 
     features.forEach((feature) => {
