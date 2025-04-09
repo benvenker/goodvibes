@@ -1,4 +1,4 @@
-import type { PlayerId, PlayerState } from './types'
+import type { PlayerId, PlayerState } from '../types/network'
 
 const THRESHOLDS = {
   POSITION_DISTANCE: 0.1, // Units in world space

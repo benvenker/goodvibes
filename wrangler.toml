@@ -1,0 +1,19 @@
+name = "goodvibes-v2"
+compatibility_date = "2025-04-04"
+main = "./src/server/index.ts"
+
+[durable_objects]
+bindings = [
+  { class_name = "GoodVibes", name = "GOODVIBES" }
+]
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = [ "GoodVibes" ]
+
+[observability]
+enabled = true
+
+[assets]
+  directory = "./dist"
+  binding = "ASSETS"

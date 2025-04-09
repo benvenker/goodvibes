@@ -1,4 +1,4 @@
-import { PlayerId, PlayerState, Vector3, WebSocketMessage } from '../../../shared/types'
+import { PlayerId, PlayerState, Vector3, WebSocketMessage } from '../types/network'
 import { EventEmitter } from '../utils/EventEmitter'
 
 export class WebSocketClient extends EventEmitter {
@@ -17,11 +17,7 @@ export class WebSocketClient extends EventEmitter {
 
   constructor() {
     super()
-    const wsUrl = import.meta.env.VITE_WS_URL || `/websocket`
-    if (!wsUrl) {
-      throw new Error('WebSocket URL not configured. Please set VITE_WS_URL environment variable.')
-    }
-    this.serverUrl = wsUrl
+    this.serverUrl = `/websocket`
   }
 
   connect() {

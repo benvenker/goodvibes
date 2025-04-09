@@ -1,7 +1,7 @@
 import { DurableObject } from 'cloudflare:workers'
 import { text } from 'itty-router'
-import { hasSignificantStateChange } from '../../shared/stateChangeDetector'
-import type { PlayerId, PlayerState, Vector3, WebSocketMessage } from '../../shared/types'
+import type { PlayerId, PlayerState, Vector3, WebSocketMessage } from '../types/network'
+import { hasSignificantStateChange } from '../utils/stateChangeDetector'
 
 // Extend WebSocket type to include Cloudflare-specific methods
 interface CloudflareWebSocket extends WebSocket {

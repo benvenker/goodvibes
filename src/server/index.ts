@@ -17,13 +17,6 @@ const worker = {
       })
     }
 
-    // Add CORS headers to all responses
-    const corsHeaders = {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-    }
-
     const url = new URL(request.url)
     const path = url.pathname
 
@@ -33,7 +26,13 @@ const worker = {
       return stub.fetch(request)
     }
 
-    return new Response('Not found', { status: 404 })
+    // Add CORS headers to all responses
+    const corsHeaders = {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    }
+    return new Response('GoodVibes says howdy. 🤠 All hat, no cattle.', { status: 404, headers: corsHeaders })
   },
 }
 

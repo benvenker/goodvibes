@@ -1,17 +1,17 @@
 import * as THREE from 'three'
-import { KeyboardControls } from './controls/KeyboardControls'
-import { TouchControls } from './controls/TouchControls'
-import { AudioManager } from './game/AudioManager'
-import { CameraController } from './game/CameraController'
-import { Car } from './game/Car'
-import { DebugPanel } from './game/DebugPanel'
-import { NetworkManager } from './game/NetworkManager'
-import { ObstacleManager } from './game/ObstacleManager'
-import { PlayerManager } from './game/PlayerManager'
-import { UserManager } from './game/UserManager'
-import { SplashScreen } from './ui/SplashScreen'
+import { KeyboardControls } from '../controls/KeyboardControls'
+import { TouchControls } from '../controls/TouchControls'
+import { SplashScreen } from '../ui/SplashScreen'
+import { AudioManager } from './AudioManager'
+import { CameraController } from './CameraController'
+import { Car } from './Car'
+import { DebugPanel } from './DebugPanel'
+import { NetworkManager } from './NetworkManager'
+import { ObstacleManager } from './ObstacleManager'
+import { PlayerManager } from './PlayerManager'
+import { UserManager } from './UserManager'
 
-class Game {
+export class Game {
   private scene!: THREE.Scene
   private camera!: THREE.PerspectiveCamera
   private renderer!: THREE.WebGLRenderer
@@ -179,13 +179,3 @@ class Game {
     this.renderer.render(this.scene, this.camera)
   }
 }
-
-window.addEventListener('load', async () => {
-  const game = new Game()
-  try {
-    await game.initialize()
-  } catch (error) {
-    console.error('Failed to start game:', error)
-    // Here you could show an error UI to the user
-  }
-})

@@ -1,7 +1,6 @@
 import { AudioManager } from '../game/AudioManager'
 import { NetworkManager } from '../game/NetworkManager'
 import { UserManager } from '../game/UserManager'
-import './splash.css'
 
 export class SplashScreen {
   private container: HTMLDivElement
@@ -19,18 +18,22 @@ export class SplashScreen {
     private userManager: UserManager
   ) {
     this.container = document.createElement('div')
-    this.container.className = 'splash-container'
+    this.container.className =
+      'fixed inset-0 flex flex-col items-center bg-gradient-to-b from-black/85 to-black/85 z-50 overflow-y-auto'
 
     const headerSection = document.createElement('div')
-    headerSection.className = 'splash-header'
+    headerSection.className =
+      'flex flex-col items-center w-full px-8 py-16 bg-gradient-to-b from-black/50 to-transparent sticky top-0'
 
     this.title = document.createElement('h1')
-    this.title.className = 'splash-title'
+    this.title.className =
+      'font-inter text-6xl md:text-8xl font-bold text-success tracking-tighter mb-2 drop-shadow-[0_0_20px_rgba(76,175,80,0.3)]'
     this.title.textContent = 'GoodVibes'
     headerSection.appendChild(this.title)
 
     this.subtitle = document.createElement('h2')
-    this.subtitle.className = 'splash-subtitle'
+    this.subtitle.className =
+      'font-inter text-2xl md:text-3xl text-white/90 mb-8 drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]'
     this.subtitle.textContent = 'Vibescale Game Starter Kit'
     headerSection.appendChild(this.subtitle)
 
@@ -45,7 +48,7 @@ export class SplashScreen {
     this.container.appendChild(headerSection)
 
     const contentSection = document.createElement('div')
-    contentSection.className = 'splash-content'
+    contentSection.className = 'flex flex-col items-center w-full max-w-4xl px-8 pb-16 flex-1'
 
     this.setupFeatures()
     contentSection.appendChild(this.featuresContainer)
@@ -59,7 +62,7 @@ export class SplashScreen {
   }
 
   private setupFeatures() {
-    this.featuresContainer.className = 'splash-features'
+    this.featuresContainer.className = 'flex flex-col gap-4 mb-12 text-center w-full'
 
     const features = [
       '🎮 Build Multiplayer Web Games Fast',
@@ -71,7 +74,8 @@ export class SplashScreen {
 
     features.forEach((feature) => {
       const featureElement = document.createElement('div')
-      featureElement.className = 'splash-feature'
+      featureElement.className =
+        'font-inter text-lg text-white p-4 bg-white/10 rounded-lg hover:bg-white/15 hover:-translate-y-1 transition-all duration-300'
       featureElement.textContent = feature
       this.featuresContainer.appendChild(featureElement)
     })
@@ -79,23 +83,22 @@ export class SplashScreen {
 
   private setupInstructions() {
     const instructions = document.createElement('div')
-    instructions.className = 'instruction-block'
+    instructions.className = 'flex flex-col gap-4'
 
     const devTitle = document.createElement('div')
-    devTitle.className = 'instruction-title'
+    devTitle.className = 'font-inter text-lg font-bold text-success mt-4'
     devTitle.textContent = 'Development:'
 
     const devCommands = document.createElement('code')
-    devCommands.className = 'instruction-code'
-    devCommands.textContent =
-      'bunx tiged benallfree/goodvibes my-new-vibe\nbun i\nbun run --cwd client dev\nbun run --cwd server dev'
+    devCommands.className = 'font-mono text-sm text-white bg-black/50 p-4 rounded-lg whitespace-pre block'
+    devCommands.textContent = 'bunx tiged benallfree/goodvibes my-new-vibe\ncd my-new-vibe\nbun i\nbun run dev'
 
     const deployTitle = document.createElement('div')
-    deployTitle.className = 'instruction-title'
+    deployTitle.className = 'font-inter text-lg font-bold text-success mt-4'
     deployTitle.textContent = 'Deployment:'
 
     const deployCommands = document.createElement('code')
-    deployCommands.className = 'instruction-code'
+    deployCommands.className = 'font-mono text-sm text-white bg-black/50 p-4 rounded-lg whitespace-pre block'
     deployCommands.textContent = 'bun run build\nbun run deploy'
 
     instructions.appendChild(devTitle)
@@ -103,19 +106,21 @@ export class SplashScreen {
     instructions.appendChild(deployTitle)
     instructions.appendChild(deployCommands)
 
-    this.instructionsContainer.className = 'splash-instructions'
+    this.instructionsContainer.className = 'bg-black/30 rounded-xl p-8 w-full'
     this.instructionsContainer.appendChild(instructions)
   }
 
   private setupUsernameInput() {
     this.usernameInput.type = 'text'
-    this.usernameInput.className = 'splash-username'
+    this.usernameInput.className =
+      'input input-bordered input-success w-full max-w-xs text-center mb-4 text-lg bg-white/90 placeholder-gray-500'
     this.usernameInput.placeholder = 'Enter your username'
     this.usernameInput.value = this.userManager.getUsername() || ''
   }
 
   private setupPlayButton() {
-    this.playButton.className = 'splash-play-button'
+    this.playButton.className =
+      'btn btn-success btn-lg text-xl mb-12 px-16 hover:scale-105 transition-transform duration-300'
     this.playButton.textContent = 'Play'
     this.playButton.disabled = true
 

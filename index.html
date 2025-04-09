@@ -3,8 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="description" content="Vibescale Three.js Game Starter Kit for Building Multiplayer Web Games" />
-    <title>GoodVibes - Vibescale Game Starter Kit</title>
+    <meta
+      name="description"
+      content="GoodVibes - A powerful multiplayer web game starter kit built with Three.js, TypeScript, and Cloudflare Workers. Perfect for building real-time 3D games with modern web technologies."
+    />
+    <title>GoodVibes - Multiplayer Web Game Starter Kit</title>
+
     <!-- Fonts -->
     <link
       href="https://fonts.googleapis.com/css2?family=Creepster&family=Rubik+Glitch:wght@400&display=swap"
@@ -18,21 +22,34 @@
     />
 
     <!-- Open Graph / Social Media Meta Tags -->
-    <meta property="og:title" content="GoodVibes - Vibescale Game Starter Kit" />
+    <meta property="og:title" content="GoodVibes - Multiplayer Web Game Starter Kit" />
     <meta property="og:url" content="<%=process.env.VITE_PUBLIC_URL%>" />
-    <meta property="og:description" content="Vibescale Three.js Game Starter Kit for Building Multiplayer Web Games" />
+    <meta
+      property="og:description"
+      content="Build multiplayer web games with Three.js, TypeScript, and Cloudflare Workers. Real-time 3D gaming made easy."
+    />
     <meta property="og:image" content="<%=process.env.VITE_PUBLIC_URL%>/splash.jpg" />
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="GoodVibes" />
 
     <!-- Twitter Card Meta Tags -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="GoodVibes - Vibescale Game Starter Kit" />
-    <meta name="twitter:description" content="Vibescale Three.js Game Starter Kit for Building Multiplayer Web Games" />
+    <meta name="twitter:title" content="GoodVibes - Multiplayer Web Game Starter Kit" />
+    <meta
+      name="twitter:description"
+      content="Build multiplayer web games with Three.js, TypeScript, and Cloudflare Workers. Real-time 3D gaming made easy."
+    />
     <meta name="twitter:image" content="<%=process.env.VITE_PUBLIC_URL%>/splash.jpg" />
     <meta name="twitter:url" content="<%=process.env.VITE_PUBLIC_URL%>" />
 
-    <!-- Styles -->
-    <link rel="stylesheet" href="/styles/game.css" />
+    <!-- Additional Meta Tags -->
+    <meta
+      name="keywords"
+      content="Three.js, TypeScript, Web Games, Multiplayer, Cloudflare Workers, WebSocket, 3D Games"
+    />
+    <meta name="author" content="GoodVibes Team" />
+    <meta name="theme-color" content="#000000" />
+    <link rel="icon" type="image/png" href="/splash.jpg" />
   </head>
   <body>
     <div id="game-container"></div>

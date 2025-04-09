@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { PlayerId, PlayerState } from '../../../shared/types'
+import { PlayerId, PlayerState } from '../types/network'
 import { createCarMesh } from '../utils/createCarMesh'
 import { AudioManager } from './AudioManager'
 
