@@ -31,7 +31,7 @@ export class SplashScreen {
 
     this.subtitle = document.createElement('h2')
     this.subtitle.className = 'splash-subtitle'
-    this.subtitle.textContent = 'Modern Three.js Starter Kit'
+    this.subtitle.textContent = 'Modern Vibecoding Three.js Starter Kit'
     headerSection.appendChild(this.subtitle)
 
     this.usernameInput = document.createElement('input')
