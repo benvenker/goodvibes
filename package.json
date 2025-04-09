@@ -1,6 +1,6 @@
 {
   "name": "goodvibes",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "type": "module",
   "description": "A starter kit for building multiplayer web games using Three.js, featuring real-time WebSocket networking, Cloudflare edge deployment, and Durable Objects for game state management",
   "keywords": [
@@ -32,10 +32,9 @@
     "deploy": "wrangler deploy",
     "ship": "bun run build && bun run deploy"
   },
-  "dependencies": {
-    "three": "^0.175.0"
-  },
   "devDependencies": {
+    "itty-router": "^5.0.18",
+    "three": "^0.175.0",
     "@cloudflare/vite-plugin": "^1.0.4",
     "@tailwindcss/vite": "^4.1.3",
     "@types/three": "^0.175.0",
