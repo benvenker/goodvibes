@@ -33,7 +33,7 @@ const worker = {
       return stub.fetch(request)
     }
 
-    return new Response('Not found', { status: 404 })
+    return new Response('GoodVibes server is healthy.', { status: 200 })
   },
 }
 
