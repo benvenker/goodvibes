@@ -40,6 +40,12 @@ bun run build
 bun run deploy
 ```
 
+## Testing
+
+### MMO Testing Made Easy
+
+Test your multiplayer game interactions easily using [VibeCheck](https://vibecheck.benallfree.com) - a powerful testing tool that allows you to run multiple game clients simultaneously in iframes within a single browser window. This makes it simple to observe and debug real-time interactions between different players in your MMO game.
+
 ## Project Structure
 
 ```
