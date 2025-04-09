@@ -6,7 +6,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "deploy": "wrangler pages deploy"
+    "deploy": "wrangler pages deploy",
+    "ship": "bun run build && bun run deploy"
   },
   "dependencies": {
     "three": "^0.175.0"
