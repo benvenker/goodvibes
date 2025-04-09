@@ -4,6 +4,8 @@ Vibescale Three.js Game Starter Kit for Building Multiplayer Web Games
 
 https://github.com/user-attachments/assets/5bf9fdb7-186a-45ea-84f2-ea92c0aa0659
 
+📺 [Installation Walkthrough](https://x.com/benallfree/status/1909934375359381513)
+
 ## Features
 
 - 🎮 Build Multiplayer Web Games Fast
