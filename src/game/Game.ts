@@ -136,7 +136,7 @@ export class Game {
   }
 
   private initializeDebugPanel(): void {
-    this.debugPanel = new DebugPanel(this.car, this.audioManager, this.networkManager.getWebSocketClient())
+    this.debugPanel = new DebugPanel(this.car, this.audioManager)
   }
 
   private initializeSplashScreen(): void {

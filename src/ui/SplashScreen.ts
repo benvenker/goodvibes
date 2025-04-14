@@ -1,6 +1,8 @@
+import { RoomEventType } from 'vibescale'
 import { AudioManager } from '../game/AudioManager'
 import { NetworkManager } from '../game/NetworkManager'
 import { UserManager } from '../game/UserManager'
+import { room } from '../game/store'
 
 export class SplashScreen {
   private container: HTMLDivElement
@@ -17,6 +19,8 @@ export class SplashScreen {
     private audioManager: AudioManager,
     private userManager: UserManager
   ) {
+    this.isConnected = !!room.getLocalPlayer()
+
     this.container = document.createElement('div')
     this.container.className =
       'fixed inset-0 flex flex-col items-center bg-gradient-to-b from-black/85 to-black/85 z-50 overflow-y-auto'
@@ -59,6 +63,8 @@ export class SplashScreen {
     this.container.appendChild(contentSection)
 
     this.setupNetworkListeners()
+
+    console.log('constructor finished', { isConnected: this.isConnected })
   }
 
   private setupFeatures() {
@@ -122,15 +128,32 @@ export class SplashScreen {
     this.playButton.className =
       'btn btn-success btn-lg text-xl mb-12 px-16 hover:scale-105 transition-transform duration-300'
     this.playButton.textContent = 'Play'
-    this.playButton.disabled = true
+    this.playButton.disabled = !this.isConnected
+
+    console.log('play button', { isConnected: this.isConnected })
 
     this.playButton.addEventListener('click', () => this.handlePlay())
   }
 
   private setupNetworkListeners() {
-    this.networkManager.onConnect(() => {
+    room.on(RoomEventType.PlayerJoined, (e) => {
+      console.log('player joined', { player: e.data, isLocal: e.data.isLocal })
+      if (!e.data.isLocal) return
+      console.log('local player joined', e.data)
       this.isConnected = true
       this.playButton.disabled = false
+    })
+
+    room.on(RoomEventType.PlayerUpdated, (e) => {
+      if (!e.data.isLocal) return
+      this.isConnected = true
+      this.playButton.disabled = false
+    })
+
+    room.on(RoomEventType.PlayerLeft, (e) => {
+      if (!e.data.isLocal) return
+      this.isConnected = false
+      this.playButton.disabled = true
     })
   }
 

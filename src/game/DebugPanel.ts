@@ -1,8 +1,9 @@
 import * as THREE from 'three'
+import { RoomEventType } from 'vibescale'
 import { AudioManager } from './AudioManager'
 import { Car } from './Car'
 import { Sparkline } from './Sparkline'
-import { WebSocketClient } from './WebSocketClient'
+import { room } from './store'
 
 export class DebugPanel {
   private container!: HTMLDivElement
@@ -47,8 +48,7 @@ export class DebugPanel {
 
   constructor(
     private car: Car,
-    private audioManager: AudioManager,
-    private wsClient: WebSocketClient
+    private audioManager: AudioManager
   ) {
     // Initialize sparklines
     this.bytesInSparkline = new Sparkline(60, 20, '#4ade80') // Green
@@ -96,17 +96,19 @@ export class DebugPanel {
   }
 
   private setupWebSocketListeners() {
-    this.wsClient.on('message:received', (data: string) => {
-      this.totalBytesIn += data.length
+    room.on(RoomEventType.Rx, (e) => {
+      const { data: message } = e
+      this.totalBytesIn += message.length
       this.totalMsgsIn++
-      this.currentSecondBytesIn += data.length
+      this.currentSecondBytesIn += message.length
       this.currentSecondMsgsIn++
     })
 
-    this.wsClient.on('message:sent', (data: string) => {
-      this.totalBytesOut += data.length
+    room.on(RoomEventType.Tx, (e) => {
+      const { data: message } = e
+      this.totalBytesOut += message.length
       this.totalMsgsOut++
-      this.currentSecondBytesOut += data.length
+      this.currentSecondBytesOut += message.length
       this.currentSecondMsgsOut++
     })
   }
@@ -141,7 +143,7 @@ export class DebugPanel {
     // Server URL
     const urlDiv = document.createElement('div')
     urlDiv.style.marginBottom = '5px'
-    urlDiv.textContent = `Server: ${this.wsClient.getServerUrl()}`
+    urlDiv.textContent = `Server: ${room.getEndpointUrl()}`
     statsContainer.appendChild(urlDiv)
 
     // Total messages
