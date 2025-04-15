@@ -10,8 +10,8 @@ export type Player = PlayerBase<{
   username?: string
 }>
 
-export const room = createRoom<Player>(import.meta.env.VITE_VIBESCALE_ROOM_ID, {
-  endpoint: import.meta.env.VITE_VIBESCALE_URL,
+export const room = createRoom<Player>(import.meta.env.VITE_VIBESCALE_ROOM_ID || 'goodvibes', {
+  endpoint: import.meta.env.VITE_VIBESCALE_URL || 'https://vibescale.benallfree.com',
   stateChangeDetectorFn: (current, next) => {
     const hasChanged =
       hasSignificantStateChange(current, next) ||
