@@ -263,6 +263,7 @@ export class Car {
   }
 
   public setColor(color: string | number): void {
+    console.log('setColor', { color })
     this.mesh.traverse((child) => {
       if (child instanceof THREE.Mesh) {
         if (child.material instanceof THREE.MeshPhongMaterial) {

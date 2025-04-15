@@ -1,7 +1,8 @@
 import * as THREE from 'three'
-import { PlayerId, PlayerState } from '../types/network'
+import { PlayerId } from 'vibescale'
 import { createCarMesh } from '../utils/createCarMesh'
 import { AudioManager } from './AudioManager'
+import { Player } from './store'
 
 interface InterpolationState {
   currentPosition: THREE.Vector3
@@ -31,15 +32,11 @@ export class PlayerManager {
     this.audioManager = audioManager
   }
 
-  addPlayer(state: PlayerState): void {
-    if (this.players.has(state.id)) {
-      return
-    }
-
+  addPlayer(player: Player): void {
     // Create car mesh for the remote player
     const playerGroup = createCarMesh({
-      bodyColor: state.color,
-      username: state.username,
+      bodyColor: player.color,
+      username: player.username,
     })
 
     // Create player objects container
@@ -48,12 +45,12 @@ export class PlayerManager {
     }
 
     // Position the player
-    playerGroup.position.set(state.position.x, state.position.y, state.position.z)
-    const rotation = new THREE.Vector3(state.rotation.x, state.rotation.y, state.rotation.z)
+    playerGroup.position.set(player.position.x, player.position.y, player.position.z)
+    const rotation = new THREE.Vector3(player.rotation.x, player.rotation.y, player.rotation.z)
     playerGroup.rotation.setFromVector3(rotation)
 
     // Initialize interpolation state
-    this.interpolationStates.set(state.id, {
+    this.interpolationStates.set(player.id, {
       currentPosition: playerGroup.position.clone(),
       targetPosition: playerGroup.position.clone(),
       currentRotation: new THREE.Vector3().setFromEuler(playerGroup.rotation),
@@ -63,37 +60,37 @@ export class PlayerManager {
 
     // Add to scene and store reference
     this.scene.add(playerGroup)
-    this.players.set(state.id, playerObjects)
+    this.players.set(player.id, playerObjects)
   }
 
-  updatePlayer(state: PlayerState): void {
-    const playerObjects = this.players.get(state.id)
-    const interpolationState = this.interpolationStates.get(state.id)
+  updatePlayer(player: Player): void {
+    const playerObjects = this.players.get(player.id)
+    const interpolationState = this.interpolationStates.get(player.id)
 
     if (!playerObjects || !interpolationState) {
-      this.addPlayer(state)
+      this.addPlayer(player)
       return
     }
 
     // Play collision sounds if the player has collided
-    if (state.hasCollided && state.collisionPoint && this.audioManager) {
-      const soundPosition = new THREE.Vector3(state.collisionPoint.x, state.collisionPoint.y, state.collisionPoint.z)
+    if (player.hasCollided && player.collisionPoint && this.audioManager) {
+      const soundPosition = new THREE.Vector3(player.collisionPoint.x, player.collisionPoint.y, player.collisionPoint.z)
       this.audioManager.playCollisionSounds(soundPosition)
     }
 
     // Update username if changed
-    if (state.username !== playerObjects.group.userData.username) {
+    if (player.username !== playerObjects.group.userData.username) {
       // Remove old group from scene
       this.scene.remove(playerObjects.group)
 
       // Create new group with updated username
       const newGroup = createCarMesh({
-        bodyColor: state.color,
-        username: state.username,
+        bodyColor: player.color,
+        username: player.username,
       })
       newGroup.position.copy(playerObjects.group.position)
       newGroup.rotation.copy(playerObjects.group.rotation)
-      newGroup.userData.username = state.username
+      newGroup.userData.username = player.username
 
       // Update references
       playerObjects.group = newGroup
@@ -103,8 +100,8 @@ export class PlayerManager {
     // Update interpolation targets
     interpolationState.currentPosition.copy(playerObjects.group.position)
     interpolationState.currentRotation.setFromEuler(playerObjects.group.rotation)
-    interpolationState.targetPosition.set(state.position.x, state.position.y, state.position.z)
-    interpolationState.targetRotation.set(state.rotation.x, state.rotation.y, state.rotation.z)
+    interpolationState.targetPosition.set(player.position.x, player.position.y, player.position.z)
+    interpolationState.targetRotation.set(player.rotation.x, player.rotation.y, player.rotation.z)
     interpolationState.lastUpdateTime = performance.now()
   }
 

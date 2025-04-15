@@ -1,6 +1,7 @@
 /// <reference types="vite/client" />
 import * as THREE from 'three'
 import backgroundMusic from '../../assets/background.mp3'
+import { Player, room } from './store'
 
 const screechSoundFiles: Record<string, string> = import.meta.glob('../../assets/fx/screech*.mp3', {
   eager: true,
@@ -25,6 +26,17 @@ export class AudioManager {
     this.listener = new THREE.AudioListener()
     camera.add(this.listener)
     this.audioLoader = new THREE.AudioLoader()
+
+    // Initialize audio state from store
+    const localPlayer = room.getLocalPlayer()
+    if (localPlayer?.audioPreferences) {
+      if (localPlayer.audioPreferences.isMuted) {
+        this.stopBackgroundMusic()
+      }
+      if (localPlayer.audioPreferences.volume !== undefined) {
+        this.setBackgroundMusicVolume(localPlayer.audioPreferences.volume)
+      }
+    }
   }
 
   public async initialize(): Promise<void> {
@@ -38,6 +50,14 @@ export class AudioManager {
         this.backgroundMusic.setBuffer(buffer)
         this.backgroundMusic.setLoop(true)
         this.backgroundMusic.setVolume(0.05) // Set initial volume to 5%
+
+        // After initialization, sync with store
+        const localPlayer = room.getLocalPlayer()
+        console.log('localPlayer', localPlayer)
+        if (!localPlayer?.audioPreferences?.isMuted && this.shouldPlayOnLoad) {
+          this.backgroundMusic.play()
+        }
+        this.backgroundMusic.setVolume(localPlayer?.audioPreferences?.volume ?? 0.05)
       }
     } catch (error) {
       console.error('Failed to load background music:', error)
@@ -82,6 +102,15 @@ export class AudioManager {
     })
   }
 
+  private updateAudioState(audioPreferences: NonNullable<Player['audioPreferences']>) {
+    const localPlayer = room.getLocalPlayer()
+    if (!localPlayer) return
+
+    room.mutatePlayer((oldState) => {
+      oldState.audioPreferences = audioPreferences
+    })
+  }
+
   public playBackgroundMusic(): void {
     console.log('Attempting to play background music...')
     if (this.backgroundMusic?.buffer && !this.backgroundMusic.isPlaying) {
@@ -92,19 +121,37 @@ export class AudioManager {
       // Set flag to play once buffer is loaded
       this.shouldPlayOnLoad = true
     }
+
+    // Update store
+    this.updateAudioState({
+      isMuted: false,
+      volume: this.backgroundMusic?.getVolume() || 0.05,
+    })
   }
 
   public stopBackgroundMusic(): void {
     if (this.backgroundMusic?.isPlaying) {
       this.backgroundMusic.stop()
     }
+
+    // Update store
+    this.updateAudioState({
+      isMuted: true,
+      volume: this.backgroundMusic?.getVolume() || 0,
+    })
   }
 
   public setBackgroundMusicVolume(volume: number): void {
+    const clampedVolume = Math.max(0, Math.min(1, volume))
+
     if (this.backgroundMusic) {
-      // Clamp volume between 0 and 1
-      const clampedVolume = Math.max(0, Math.min(1, volume))
       this.backgroundMusic.setVolume(clampedVolume)
+
+      // Update store
+      this.updateAudioState({
+        isMuted: !this.backgroundMusic.isPlaying,
+        volume: clampedVolume,
+      })
     }
   }
 

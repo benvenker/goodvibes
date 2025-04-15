@@ -1,0 +1,6 @@
+---
+description: Anything that has to do with server communication and MMO or vibescale or rooms or room events
+globs: 
+alwaysApply: false
+---
+* Refer to ./node_modules/vibescale for specifics, particularly llm.md 

@@ -136,7 +136,11 @@ export class Game {
   }
 
   private initializeDebugPanel(): void {
-    this.debugPanel = new DebugPanel(this.car, this.audioManager, this.networkManager.getWebSocketClient())
+    this.debugPanel = new DebugPanel(this.car, this.audioManager)
+    // Show debug panel when splash screen is dismissed
+    window.addEventListener('splashScreenDismissed', () => {
+      this.debugPanel.show()
+    })
   }
 
   private initializeSplashScreen(): void {
