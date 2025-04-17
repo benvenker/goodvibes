@@ -1,5 +1,4 @@
 import * as THREE from 'three'
-import { Car } from './Car'
 
 export class CameraController {
   private camera: THREE.PerspectiveCamera
@@ -19,12 +18,12 @@ export class CameraController {
     this.camera.updateProjectionMatrix()
   }
 
-  public update(car: Car): void {
-    const carPosition = car.getPosition()
+  public update(car: THREE.Object3D): void {
+    const carPosition = car.position
     // Position camera behind and slightly above the car
     const cameraOffset = new THREE.Vector3(0, 5, -8)
     // Rotate the offset based on car's rotation to follow behind
-    cameraOffset.applyAxisAngle(new THREE.Vector3(0, 1, 0), car.getMesh().rotation.y)
+    cameraOffset.applyAxisAngle(new THREE.Vector3(0, 1, 0), car.rotation.y)
     const targetPosition = carPosition.clone().add(cameraOffset)
 
     // Smoothly move camera to new position

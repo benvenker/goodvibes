@@ -178,7 +178,7 @@ export class Game {
     // Update player interpolation
     this.playerManager.update()
 
-    this.cameraController.update(this.car)
+    this.cameraController.update(this.car.getMesh())
 
     this.renderer.render(this.scene, this.camera)
   }
