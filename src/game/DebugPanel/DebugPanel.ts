@@ -5,22 +5,18 @@ import { AudioManager } from '../AudioManager'
 import { Car } from '../Car'
 import { Sparkline } from '../Sparkline'
 import { room } from '../store'
+import { FpsWidget } from './widgets/FpsWidget'
 
 export class DebugPanel {
   private container!: HTMLDivElement
   private gearIcon!: HTMLDivElement
   private panel!: HTMLDivElement
-  private fpsDisplay!: HTMLDivElement
+  private fpsWidget: FpsWidget
   private usernameDisplay!: HTMLDivElement
   private playerIdDisplay!: HTMLDivElement
   private fxButtons!: HTMLDivElement
   private errorDisplay!: HTMLDivElement
   private networkDisplay!: HTMLDivElement
-  private lastFrameTime = performance.now()
-  private frameCount = 0
-  private fps = 0
-  private updateInterval = 500 // Update FPS every 500ms
-  private lastFpsUpdate = performance.now()
   private consoleErrors: string[] = []
 
   // Network metrics tracking
@@ -56,6 +52,7 @@ export class DebugPanel {
     this.bytesOutSparkline = new Sparkline(60, 20, '#60a5fa') // Blue
     this.msgsInSparkline = new Sparkline(60, 20, '#4ade80') // Green
     this.msgsOutSparkline = new Sparkline(60, 20, '#60a5fa') // Blue
+    this.fpsWidget = new FpsWidget()
 
     this.setupContainer()
     this.setupPanel()
@@ -129,10 +126,8 @@ export class DebugPanel {
     this.panel.style.minWidth = '300px'
     this.container.appendChild(this.panel)
 
-    // FPS Display
-    this.fpsDisplay = document.createElement('div')
-    this.fpsDisplay.style.marginBottom = '10px'
-    this.panel.appendChild(this.fpsDisplay)
+    // Add FPS Widget
+    this.panel.appendChild(this.fpsWidget.getElement())
 
     // Network Stats Display
     this.networkDisplay = document.createElement('div')
@@ -253,66 +248,58 @@ export class DebugPanel {
 
   public update() {
     const now = performance.now()
-    this.frameCount++
 
-    // Update FPS every 500ms
-    if (now - this.lastFpsUpdate >= this.updateInterval) {
-      this.fps = Math.round((this.frameCount * 1000) / (now - this.lastFpsUpdate))
-      this.frameCount = 0
-      this.lastFpsUpdate = now
+    // Update FPS widget
+    this.fpsWidget.update(now)
+
+    // Update metrics every second
+    if (now - this.lastMetricsUpdate >= 1000) {
+      // Store current second's rates in window arrays
+      this.updateWindowArray(this.bytesInWindow, this.currentSecondBytesIn)
+      this.updateWindowArray(this.bytesOutWindow, this.currentSecondBytesOut)
+      this.updateWindowArray(this.msgsInWindow, this.currentSecondMsgsIn)
+      this.updateWindowArray(this.msgsOutWindow, this.currentSecondMsgsOut)
+
+      // Reset current second counters
+      this.currentSecondBytesIn = 0
+      this.currentSecondBytesOut = 0
+      this.currentSecondMsgsIn = 0
+      this.currentSecondMsgsOut = 0
+
+      // Calculate averages
+      const avgBytesIn = this.calculateAverage(this.bytesInWindow)
+      const avgBytesOut = this.calculateAverage(this.bytesOutWindow)
+      const avgMsgsIn = this.calculateAverage(this.msgsInWindow)
+      const avgMsgsOut = this.calculateAverage(this.msgsOutWindow)
+
+      // Update sparklines with the averages
+      this.bytesInSparkline.addValue(avgBytesIn / 1024) // Convert to KB
+      this.bytesOutSparkline.addValue(avgBytesOut / 1024)
+      this.msgsInSparkline.addValue(avgMsgsIn)
+      this.msgsOutSparkline.addValue(avgMsgsOut)
 
       // Update displays
-      this.fpsDisplay.textContent = `FPS: ${this.fps}`
-      this.usernameDisplay.textContent = `Username: ${this.car.getUsername() || 'Anonymous'}`
-      this.playerIdDisplay.textContent = `Player ID: ${this.car.getPlayerId() || 'Not connected'}`
-
-      // Update total message counts
+      document.getElementById('bytes-in')!.textContent = (avgBytesIn / 1024).toFixed(1)
+      document.getElementById('bytes-out')!.textContent = (avgBytesOut / 1024).toFixed(1)
+      document.getElementById('msgs-in')!.textContent = avgMsgsIn.toFixed(1)
+      document.getElementById('msgs-out')!.textContent = avgMsgsOut.toFixed(1)
       document.getElementById('total-msgs-in')!.textContent = this.totalMsgsIn.toString()
       document.getElementById('total-msgs-out')!.textContent = this.totalMsgsOut.toString()
 
-      // Update metrics every second
-      if (now - this.lastMetricsUpdate >= 1000) {
-        // Store current second's rates in window arrays
-        this.updateWindowArray(this.bytesInWindow, this.currentSecondBytesIn)
-        this.updateWindowArray(this.bytesOutWindow, this.currentSecondBytesOut)
-        this.updateWindowArray(this.msgsInWindow, this.currentSecondMsgsIn)
-        this.updateWindowArray(this.msgsOutWindow, this.currentSecondMsgsOut)
+      // Update user info
+      this.usernameDisplay.textContent = `Username: ${this.car.getUsername() || 'Anonymous'}`
+      this.playerIdDisplay.textContent = `Player ID: ${this.car.getPlayerId() || 'Not connected'}`
 
-        // Reset current second counters
-        this.currentSecondBytesIn = 0
-        this.currentSecondBytesOut = 0
-        this.currentSecondMsgsIn = 0
-        this.currentSecondMsgsOut = 0
+      this.lastMetricsUpdate = now
+    }
 
-        // Calculate averages
-        const avgBytesIn = this.calculateAverage(this.bytesInWindow)
-        const avgBytesOut = this.calculateAverage(this.bytesOutWindow)
-        const avgMsgsIn = this.calculateAverage(this.msgsInWindow)
-        const avgMsgsOut = this.calculateAverage(this.msgsOutWindow)
-
-        // Update sparklines with the averages
-        this.bytesInSparkline.addValue(avgBytesIn / 1024) // Convert to KB
-        this.bytesOutSparkline.addValue(avgBytesOut / 1024)
-        this.msgsInSparkline.addValue(avgMsgsIn)
-        this.msgsOutSparkline.addValue(avgMsgsOut)
-
-        // Update displays
-        document.getElementById('bytes-in')!.textContent = (avgBytesIn / 1024).toFixed(1)
-        document.getElementById('bytes-out')!.textContent = (avgBytesOut / 1024).toFixed(1)
-        document.getElementById('msgs-in')!.textContent = avgMsgsIn.toFixed(1)
-        document.getElementById('msgs-out')!.textContent = avgMsgsOut.toFixed(1)
-
-        this.lastMetricsUpdate = now
-      }
-
-      // Update error display
-      if (this.consoleErrors.length > 0) {
-        this.errorDisplay.innerHTML = this.consoleErrors
-          .map((err) => `<div style="margin-bottom: 5px;">${err}</div>`)
-          .join('')
-      } else {
-        this.errorDisplay.textContent = ''
-      }
+    // Update error display
+    if (this.consoleErrors.length > 0) {
+      this.errorDisplay.innerHTML = this.consoleErrors
+        .map((err) => `<div style="margin-bottom: 5px;">${err}</div>`)
+        .join('')
+    } else {
+      this.errorDisplay.textContent = ''
     }
 
     requestAnimationFrame(() => this.update())
