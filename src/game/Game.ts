@@ -1,6 +1,6 @@
 import * as THREE from 'three'
-import { KeyboardControls } from '../controls/KeyboardControls'
-import { TouchControls } from '../controls/TouchControls'
+import { KeyboardControls } from '../core/controls/KeyboardControls'
+import { TouchControls } from '../core/controls/TouchControls'
 import { SplashScreen } from '../ui/SplashScreen'
 import { AudioManager } from './AudioManager'
 import { CameraController } from './CameraController'

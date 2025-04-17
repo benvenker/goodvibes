@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { CarPhysicsConfig, defaultCarPhysics } from '../config/carPhysics'
-import type { JoystickState } from '../controls/TouchControls'
+import type { JoystickState } from '../core/controls/TouchControls'
 import { createCarMesh } from '../utils/createCarMesh'
 import { AudioManager } from './AudioManager'
 
