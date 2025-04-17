@@ -1,9 +1,10 @@
 import * as THREE from 'three'
+import van from 'vanjs-core'
 import { RoomEventType } from 'vibescale'
-import { AudioManager } from './AudioManager'
-import { Car } from './Car'
-import { Sparkline } from './Sparkline'
-import { room } from './store'
+import { AudioManager } from '../AudioManager'
+import { Car } from '../Car'
+import { Sparkline } from '../Sparkline'
+import { room } from '../store'
 
 export class DebugPanel {
   private container!: HTMLDivElement
@@ -65,12 +66,9 @@ export class DebugPanel {
   }
 
   private setupContainer() {
-    this.container = document.createElement('div')
-    this.container.style.position = 'fixed'
-    this.container.style.top = '20px'
-    this.container.style.left = '20px'
-    this.container.style.zIndex = '1000'
-    this.container.style.display = 'none' // Initially hide the container
+    this.container = van.tags.div({
+      style: 'position: fixed; top: 20px; left: 20px; z-index: 1000; display: none;',
+    })
     document.body.appendChild(this.container)
   }
 
