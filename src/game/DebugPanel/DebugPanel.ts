@@ -1,64 +1,31 @@
 import * as THREE from 'three'
 import van from 'vanjs-core'
-import { RoomEventType } from 'vibescale'
 import { AudioManager } from '../AudioManager'
 import { Car } from '../Car'
-import { Sparkline } from '../Sparkline'
-import { room } from '../store'
 import { FpsWidget } from './widgets/FpsWidget'
+import { VibescaleWidget } from './widgets/VibescaleWidget'
 
 export class DebugPanel {
   private container!: HTMLDivElement
   private gearIcon!: HTMLDivElement
   private panel!: HTMLDivElement
   private fpsWidget: FpsWidget
-  private usernameDisplay!: HTMLDivElement
-  private playerIdDisplay!: HTMLDivElement
+  private vibescaleWidget: VibescaleWidget
   private fxButtons!: HTMLDivElement
   private errorDisplay!: HTMLDivElement
-  private networkDisplay!: HTMLDivElement
   private consoleErrors: string[] = []
-
-  // Network metrics tracking
-  private lastMetricsUpdate = performance.now()
-  private totalBytesIn = 0
-  private totalBytesOut = 0
-  private totalMsgsIn = 0
-  private totalMsgsOut = 0
-  private currentSecondBytesIn = 0
-  private currentSecondBytesOut = 0
-  private currentSecondMsgsIn = 0
-  private currentSecondMsgsOut = 0
-
-  private readonly WINDOW_SIZE = 60 // 60 seconds of history
-  private windowIndex = 0
-  private bytesInWindow: number[] = []
-  private bytesOutWindow: number[] = []
-  private msgsInWindow: number[] = []
-  private msgsOutWindow: number[] = []
-
-  // Network visualization
-  private bytesInSparkline: Sparkline
-  private bytesOutSparkline: Sparkline
-  private msgsInSparkline: Sparkline
-  private msgsOutSparkline: Sparkline
 
   constructor(
     private car: Car,
     private audioManager: AudioManager
   ) {
-    // Initialize sparklines
-    this.bytesInSparkline = new Sparkline(60, 20, '#4ade80') // Green
-    this.bytesOutSparkline = new Sparkline(60, 20, '#60a5fa') // Blue
-    this.msgsInSparkline = new Sparkline(60, 20, '#4ade80') // Green
-    this.msgsOutSparkline = new Sparkline(60, 20, '#60a5fa') // Blue
     this.fpsWidget = new FpsWidget()
+    this.vibescaleWidget = new VibescaleWidget(car)
 
     this.setupContainer()
     this.setupPanel()
     this.setupGearIcon()
     this.setupErrorHandling()
-    this.setupWebSocketListeners()
     this.update()
   }
 
@@ -95,24 +62,6 @@ export class DebugPanel {
     })
   }
 
-  private setupWebSocketListeners() {
-    room.on(RoomEventType.Rx, (e) => {
-      const { data: message } = e
-      this.totalBytesIn += message.length
-      this.totalMsgsIn++
-      this.currentSecondBytesIn += message.length
-      this.currentSecondMsgsIn++
-    })
-
-    room.on(RoomEventType.Tx, (e) => {
-      const { data: message } = e
-      this.totalBytesOut += message.length
-      this.totalMsgsOut++
-      this.currentSecondBytesOut += message.length
-      this.currentSecondMsgsOut++
-    })
-  }
-
   private setupPanel() {
     this.panel = document.createElement('div')
     this.panel.style.display = 'none'
@@ -129,57 +78,8 @@ export class DebugPanel {
     // Add FPS Widget
     this.panel.appendChild(this.fpsWidget.getElement())
 
-    // Network Stats Display
-    this.networkDisplay = document.createElement('div')
-    this.networkDisplay.style.marginBottom = '10px'
-
-    // Create network stats container
-    const statsContainer = document.createElement('div')
-    statsContainer.style.fontSize = '12px'
-    statsContainer.style.fontFamily = 'monospace'
-
-    // Server URL
-    const urlDiv = document.createElement('div')
-    urlDiv.style.marginBottom = '5px'
-    urlDiv.textContent = `Server: ${room.getEndpointUrl()}`
-    statsContainer.appendChild(urlDiv)
-
-    // Total messages
-    const totalMsgsDiv = document.createElement('div')
-    totalMsgsDiv.style.marginBottom = '5px'
-    totalMsgsDiv.innerHTML =
-      'Total msgs in: <span id="total-msgs-in">0</span><br>Total msgs out: <span id="total-msgs-out">0</span>'
-    statsContainer.appendChild(totalMsgsDiv)
-
-    // Bytes stats
-    const bytesDiv = document.createElement('div')
-    bytesDiv.style.marginBottom = '5px'
-    bytesDiv.innerHTML = 'KB/s in: <span id="bytes-in">0</span>'
-    bytesDiv.appendChild(this.bytesInSparkline.getElement())
-    bytesDiv.innerHTML += '<br>KB/s out: <span id="bytes-out">0</span>'
-    bytesDiv.appendChild(this.bytesOutSparkline.getElement())
-    statsContainer.appendChild(bytesDiv)
-
-    // Messages stats
-    const msgsDiv = document.createElement('div')
-    msgsDiv.innerHTML = 'Msgs/s in: <span id="msgs-in">0</span>'
-    msgsDiv.appendChild(this.msgsInSparkline.getElement())
-    msgsDiv.innerHTML += '<br>Msgs/s out: <span id="msgs-out">0</span>'
-    msgsDiv.appendChild(this.msgsOutSparkline.getElement())
-    statsContainer.appendChild(msgsDiv)
-
-    this.networkDisplay.appendChild(statsContainer)
-    this.panel.appendChild(this.networkDisplay)
-
-    // Username Display
-    this.usernameDisplay = document.createElement('div')
-    this.usernameDisplay.style.marginBottom = '10px'
-    this.panel.appendChild(this.usernameDisplay)
-
-    // Player ID Display
-    this.playerIdDisplay = document.createElement('div')
-    this.playerIdDisplay.style.marginBottom = '10px'
-    this.panel.appendChild(this.playerIdDisplay)
+    // Add Vibescale Widget
+    this.panel.appendChild(this.vibescaleWidget.getElement())
 
     // FX Buttons
     this.fxButtons = document.createElement('div')
@@ -252,46 +152,8 @@ export class DebugPanel {
     // Update FPS widget
     this.fpsWidget.update(now)
 
-    // Update metrics every second
-    if (now - this.lastMetricsUpdate >= 1000) {
-      // Store current second's rates in window arrays
-      this.updateWindowArray(this.bytesInWindow, this.currentSecondBytesIn)
-      this.updateWindowArray(this.bytesOutWindow, this.currentSecondBytesOut)
-      this.updateWindowArray(this.msgsInWindow, this.currentSecondMsgsIn)
-      this.updateWindowArray(this.msgsOutWindow, this.currentSecondMsgsOut)
-
-      // Reset current second counters
-      this.currentSecondBytesIn = 0
-      this.currentSecondBytesOut = 0
-      this.currentSecondMsgsIn = 0
-      this.currentSecondMsgsOut = 0
-
-      // Calculate averages
-      const avgBytesIn = this.calculateAverage(this.bytesInWindow)
-      const avgBytesOut = this.calculateAverage(this.bytesOutWindow)
-      const avgMsgsIn = this.calculateAverage(this.msgsInWindow)
-      const avgMsgsOut = this.calculateAverage(this.msgsOutWindow)
-
-      // Update sparklines with the averages
-      this.bytesInSparkline.addValue(avgBytesIn / 1024) // Convert to KB
-      this.bytesOutSparkline.addValue(avgBytesOut / 1024)
-      this.msgsInSparkline.addValue(avgMsgsIn)
-      this.msgsOutSparkline.addValue(avgMsgsOut)
-
-      // Update displays
-      document.getElementById('bytes-in')!.textContent = (avgBytesIn / 1024).toFixed(1)
-      document.getElementById('bytes-out')!.textContent = (avgBytesOut / 1024).toFixed(1)
-      document.getElementById('msgs-in')!.textContent = avgMsgsIn.toFixed(1)
-      document.getElementById('msgs-out')!.textContent = avgMsgsOut.toFixed(1)
-      document.getElementById('total-msgs-in')!.textContent = this.totalMsgsIn.toString()
-      document.getElementById('total-msgs-out')!.textContent = this.totalMsgsOut.toString()
-
-      // Update user info
-      this.usernameDisplay.textContent = `Username: ${this.car.getUsername() || 'Anonymous'}`
-      this.playerIdDisplay.textContent = `Player ID: ${this.car.getPlayerId() || 'Not connected'}`
-
-      this.lastMetricsUpdate = now
-    }
+    // Update Vibescale widget
+    this.vibescaleWidget.update(now)
 
     // Update error display
     if (this.consoleErrors.length > 0) {
@@ -303,22 +165,5 @@ export class DebugPanel {
     }
 
     requestAnimationFrame(() => this.update())
-  }
-
-  private updateWindowArray(arr: number[], value: number) {
-    if (arr.length < this.WINDOW_SIZE) {
-      // Still building up the window, just push
-      arr.push(value)
-    } else {
-      // Window is full, use rotating index
-      arr[this.windowIndex] = value
-      this.windowIndex = (this.windowIndex + 1) % this.WINDOW_SIZE
-    }
-  }
-
-  private calculateAverage(arr: number[]): number {
-    if (arr.length === 0) return 0
-    const sum = arr.reduce((acc, val) => acc + val, 0)
-    return sum / arr.length
   }
 }
