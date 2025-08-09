@@ -7,6 +7,8 @@ import { AudioManager } from './AudioManager'
 export class Car {
   private mesh: THREE.Group
   private velocity: THREE.Vector3
+  private velocityY = 0
+  private isAirborne = false
   private physics: CarPhysicsConfig
   private username?: string
   private playerId?: string
@@ -17,9 +19,12 @@ export class Car {
   private readonly boundingBox: THREE.Box3
   private readonly CAR_WIDTH = 2
   private readonly CAR_LENGTH = 4
+  private readonly GRAVITY = -30 // units/s²
+  private readonly MIN_LAUNCH_VELOCITY = 10
   private polls: THREE.Mesh[] = []
   private obstacles: THREE.Mesh[] = []
   private walls: THREE.Mesh[] = []
+  private ramps: THREE.Mesh[] = []
   private otherPlayers = new Map<string, THREE.Group>()
 
   constructor(physics: CarPhysicsConfig = defaultCarPhysics) {
@@ -45,6 +50,10 @@ export class Car {
     this.walls = walls
   }
 
+  public setRamps(ramps: THREE.Mesh[]): void {
+    this.ramps = ramps
+  }
+
   public setOtherPlayers(players: Map<string, { group: THREE.Group }>): void {
     this.otherPlayers = new Map([...players].map(([id, obj]) => [id, obj.group]))
   }
@@ -56,7 +65,28 @@ export class Car {
     let collisionPoint: THREE.Vector3 | undefined
     const IMPACT_VELOCITY_THRESHOLD = 5 // Only count as collision if impact speed is above this
 
-    // Check all collidable objects
+    // Check for ramp collisions first (they launch instead of blocking)
+    for (const ramp of this.ramps) {
+      const rampBox = new THREE.Box3().setFromObject(ramp)
+      if (this.boundingBox.intersectsBox(rampBox) && !this.isAirborne) {
+        // Calculate launch velocity based on forward speed
+        const forwardSpeed = this.velocity.length()
+        if (forwardSpeed > 5) { // Minimum speed to launch
+          // Launch proportional to speed, with minimum launch
+          this.velocityY = Math.max(forwardSpeed * 0.6, this.MIN_LAUNCH_VELOCITY)
+          this.isAirborne = true
+          
+          // Play a launch sound if we have audio
+          if (this.audioManager) {
+            this.audioManager.playCollisionSounds(ramp.position)
+          }
+        }
+      }
+    }
+
+    // Check all collidable objects (but not if we're airborne)
+    if (this.isAirborne) return false
+    
     const allObjects = [...this.walls, ...this.obstacles, ...this.polls]
     for (const obj of allObjects) {
       const objBox = new THREE.Box3().setFromObject(obj)
@@ -154,7 +184,7 @@ export class Car {
   }
 
   public update(input: JoystickState, deltaTime: number): void {
-    // Update rotation based on input
+    // Update rotation based on input (works even when airborne for tricks!)
     if (Math.abs(input.x) > 0.1) {
       this.mesh.rotation.y -= input.x * this.physics.turnSpeed * deltaTime
     }
@@ -163,14 +193,20 @@ export class Car {
     const forward = new THREE.Vector3(0, 0, 1)
     forward.applyAxisAngle(new THREE.Vector3(0, 1, 0), this.mesh.rotation.y)
 
-    // Update velocity based on input
+    // Update velocity based on input (reduced control when airborne)
     if (Math.abs(input.y) > 0.1) {
-      const acceleration = forward.multiplyScalar(input.y * this.physics.acceleration * deltaTime)
+      const controlMultiplier = this.isAirborne ? 0.3 : 1.0 // Less control in air
+      const acceleration = forward.multiplyScalar(input.y * this.physics.acceleration * deltaTime * controlMultiplier)
       this.velocity.add(acceleration)
     }
 
-    // Apply friction
-    this.velocity.multiplyScalar(1 - this.physics.friction * deltaTime)
+    // Apply friction (only on ground)
+    if (!this.isAirborne) {
+      this.velocity.multiplyScalar(1 - this.physics.friction * deltaTime)
+    } else {
+      // Less air resistance
+      this.velocity.multiplyScalar(1 - this.physics.friction * deltaTime * 0.1)
+    }
 
     // Limit speed
     const speed = this.velocity.length()
@@ -181,9 +217,34 @@ export class Car {
     // Keep velocity in XZ plane
     this.velocity.y = 0
 
+    // Apply gravity if airborne
+    if (this.isAirborne || this.mesh.position.y > 0.1) {
+      this.velocityY += this.GRAVITY * deltaTime
+      this.isAirborne = true
+    }
+
     // Update position
     const newPosition = this.mesh.position.clone().add(this.velocity.clone().multiplyScalar(deltaTime))
-    newPosition.y = 0 // Keep Y position at 0
+    newPosition.y = this.mesh.position.y + this.velocityY * deltaTime
+    
+    // Check for landing
+    if (this.isAirborne && newPosition.y <= 0) {
+      newPosition.y = 0
+      this.isAirborne = false
+      
+      // Play landing sound if landing hard
+      if (this.velocityY < -10 && this.audioManager) {
+        this.audioManager.playCollisionSounds(this.mesh.position)
+      }
+      
+      // Small bounce on hard landing
+      if (this.velocityY < -15) {
+        this.velocityY = -this.velocityY * 0.3
+      } else {
+        this.velocityY = 0
+      }
+    }
+    
     this.mesh.position.copy(newPosition)
 
     // Handle collisions and get collision state

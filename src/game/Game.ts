@@ -3,6 +3,7 @@ import { CameraController } from '../core/CameraController'
 import { KeyboardControls } from '../core/controls/KeyboardControls'
 import { TouchControls } from '../core/controls/TouchControls'
 import { SplashScreen } from '../ui/SplashScreen'
+import { ControlsOverlay } from '../ui/ControlsOverlay'
 import { AudioManager } from './AudioManager'
 import { Car } from './Car'
 import { DebugPanel } from './DebugPanel/DebugPanel'
@@ -28,6 +29,7 @@ export class Game {
   private audioManager!: AudioManager
   private debugPanel!: DebugPanel
   private splashScreen!: SplashScreen
+  private controlsOverlay!: ControlsOverlay
   private userManager!: UserManager
   private isInitialized = false
 
@@ -53,6 +55,7 @@ export class Game {
       this.initializeLighting()
       this.initializeDebugPanel()
       this.initializeSplashScreen()
+      this.initializeControlsOverlay()
 
       this.isInitialized = true
       this.animate()
@@ -123,6 +126,7 @@ export class Game {
     this.car.setPollObjects(this.obstacleManager.getPolls())
     this.car.setObstacles(this.obstacleManager.getObstacles())
     this.car.setWalls(this.obstacleManager.getWalls())
+    this.car.setRamps(this.obstacleManager.getRamps())
   }
 
   private initializeLighting(): void {
@@ -146,6 +150,16 @@ export class Game {
   private initializeSplashScreen(): void {
     this.splashScreen = new SplashScreen(this.networkManager, this.audioManager, this.userManager)
     this.splashScreen.show()
+  }
+
+  private initializeControlsOverlay(): void {
+    const controlsContainer = document.createElement('div')
+    controlsContainer.id = 'controls-overlay'
+    document.body.appendChild(controlsContainer)
+    
+    import('vanjs-core').then(van => {
+      van.add(controlsContainer, ControlsOverlay())
+    })
   }
 
   private handleResize(): void {

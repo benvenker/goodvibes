@@ -1,10 +1,12 @@
 import * as THREE from 'three'
+import { createRamp } from '../utils/createRamp'
 
 export class ObstacleManager {
   private scene: THREE.Scene
   private polls: THREE.Mesh[] = []
   private obstacles: THREE.Mesh[] = []
   private walls: THREE.Mesh[] = []
+  private ramps: THREE.Mesh[] = []
   private readonly ARENA_SIZE = 50 // Half-size of the arena
   private readonly WALL_HEIGHT = 5
 
@@ -17,6 +19,7 @@ export class ObstacleManager {
     this.createBoxObstacles()
     this.createPollObstacles()
     this.createWalls()
+    this.createRamps()
   }
 
   private createBoxObstacles(): void {
@@ -93,6 +96,30 @@ export class ObstacleManager {
     })
   }
 
+  private createRamps(): void {
+    // Create 3 ramps at strategic positions
+    const rampPositions = [
+      { pos: { x: 25, z: 0 }, rotation: -Math.PI / 2 }, // East side, facing west
+      { pos: { x: -25, z: 0 }, rotation: Math.PI / 2 }, // West side, facing east
+      { pos: { x: 0, z: -25 }, rotation: 0 }, // South side, facing north
+    ]
+
+    rampPositions.forEach(({ pos, rotation }) => {
+      const ramp = createRamp({
+        width: 8,
+        length: 12,
+        height: 6,
+        color: 0xff6b00
+      })
+      
+      ramp.position.set(pos.x, 0, pos.z)
+      ramp.rotation.y = rotation
+      
+      this.scene.add(ramp)
+      this.ramps.push(ramp)
+    })
+  }
+
   public getPolls(): THREE.Mesh[] {
     return this.polls
   }
@@ -103,5 +130,9 @@ export class ObstacleManager {
 
   public getWalls(): THREE.Mesh[] {
     return this.walls
+  }
+
+  public getRamps(): THREE.Mesh[] {
+    return this.ramps
   }
 }
