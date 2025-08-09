@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-GoodVibes is a multiplayer 3D web game starter kit built with Three.js and Vibescale. It provides a foundation for developing real-time multiplayer browser games with physics, 3D graphics, and spatial audio.
+GoodVibes is a multiplayer 3D web game starter kit built with Three.js and Vibescale. It provides a foundation for developing real-time multiplayer browser games with physics, 3D graphics, spatial audio, and now features ramps for jumping gameplay.
 
 ## Critical Project Rules
 
@@ -52,11 +52,12 @@ The codebase follows an Entity-Component-System inspired architecture with clear
 ### Core Systems
 
 1. **Game Loop** (`src/game/Game.ts`): Main orchestrator that manages initialization, animation loop, and system updates
-2. **Networking** (`src/game/NetworkManager.ts`): Real-time multiplayer via Vibescale with optimized state synchronization
-3. **State Management** (`src/game/store.ts`): Centralized reactive store using Vibescale's room system
-4. **Input Handling** (`src/core/controls/`): Keyboard and touch controls with input aggregation
+2. **Networking** (`src/game/NetworkManager.ts`): Real-time multiplayer via Vibescale with optimized state synchronization, proper cleanup on disconnect
+3. **State Management** (`src/game/store.ts`): Centralized reactive store using Vibescale's room system with support for different room modes
+4. **Input Handling** (`src/core/controls/`): Keyboard (WASD + Arrow keys) and touch controls with input aggregation
 5. **Camera System** (`src/core/CameraController.ts`): Third-person following camera with smooth interpolation
-6. **Physics** (`src/config/carPhysics.ts`): Tunable vehicle physics parameters
+6. **Physics** (`src/config/carPhysics.ts`): Tunable vehicle physics with gravity, jumping, and airborne mechanics
+7. **UI System** (`src/ui/`): VanJS-based UI components including controls overlay and splash screen
 
 ### Directory Structure (STRICT)
 All code MUST live in `/src` with this organization:
@@ -104,6 +105,14 @@ Currently no test framework is implemented. When adding tests:
 4. Test network state synchronization logic
 5. Add integration tests for multiplayer scenarios
 
+## Game Modes
+
+The game supports three different room modes via URL parameters:
+
+1. **Single Player Mode** (`?single=true`): Creates a unique room for solo play
+2. **Private Room** (`?room=roomName`): Creates/joins a specific room for friends
+3. **Public Multiplayer** (default): Joins the shared "goodvibes" room
+
 ## Deployment Configuration
 
 The project deploys to Cloudflare:
@@ -116,10 +125,12 @@ The project deploys to Cloudflare:
 ## Vibescale Integration
 
 For any server communication, MMO features, rooms, or room events:
-- Refer to Vibescale documentation in node_modules/vibescale
+- Refer to Vibescale documentation in node_modules/vibescale/llm.md
 - Use the reactive room system for state management
 - Implement optimized state synchronization patterns
 - Handle connection/disconnection gracefully
+- **Important**: Connections are ephemeral - always clear player data on connect/disconnect
+- Room IDs determine who plays together
 
 ## Common Development Tasks
 
@@ -136,12 +147,26 @@ Edit `src/config/carPhysics.ts` for vehicle behavior:
 - `turnSpeed`, `driftFactor` for handling
 - `collisionBounce` for collision response
 
+### Working with Ramps and Jumping
+- **Ramps**: Located at 3 strategic positions (east, west, south)
+- **Launch mechanics**: Hit ramps at minimum 5 units/s speed to launch
+- **Gravity**: -30 units/s² pulls cars back down
+- **Airborne controls**: 30% steering control while in air
+- **Landing**: Automatic with bounce on hard landings (velocityY < -15)
+- **Ramp creation**: Use `createRamp()` utility in `src/utils/createRamp.ts`
+
 ### Adding UI Components
 1. Create VanJS component in `src/ui/`
 2. Import and mount in Game.ts or main.ts
 3. Use Tailwind/DaisyUI classes for styling (no inline styles)
 4. Create component-specific CSS file co-located with component
 5. Connect to game state via store or EventEmitter
+
+### Game Controls
+- **Movement**: WASD or Arrow keys
+- **M**: Toggle audio mute
+- **Touch**: On-screen controls for mobile
+- **Controls Overlay**: Shows/hides with X button, displays all controls and game mode
 
 ### Debugging Network Issues
 1. Enable DebugPanel in development
