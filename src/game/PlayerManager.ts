@@ -134,6 +134,19 @@ export class PlayerManager {
     this.interpolationStates.delete(playerId)
   }
 
+  clearAllPlayers(): void {
+    // Remove all player objects from the scene
+    this.players.forEach((playerObjects) => {
+      this.scene.remove(playerObjects.group)
+    })
+    
+    // Clear all data structures
+    this.players.clear()
+    this.interpolationStates.clear()
+    
+    console.log('Cleared all players from scene')
+  }
+
   public getPlayers(): Map<PlayerId, PlayerObjects> {
     return this.players
   }

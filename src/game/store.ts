@@ -10,7 +10,29 @@ export type Player = PlayerBase<{
   username?: string
 }>
 
-export const room = createRoom<Player>(import.meta.env.VITE_VIBESCALE_ROOM_ID || 'goodvibes', {
+// Check URL params for room override or single-player mode
+const urlParams = new URLSearchParams(window.location.search)
+const roomParam = urlParams.get('room')
+const singlePlayer = urlParams.get('single') === 'true'
+
+// Generate room ID based on mode
+const getRoomId = () => {
+  if (singlePlayer) {
+    // Generate unique room ID for single-player mode
+    return `single-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+  }
+  if (roomParam) {
+    // Use room from URL parameter
+    return roomParam
+  }
+  // Default to shared room
+  return import.meta.env.VITE_VIBESCALE_ROOM_ID || 'goodvibes'
+}
+
+const roomId = getRoomId()
+console.log('Connecting to room:', roomId, { singlePlayer, roomParam })
+
+export const room = createRoom<Player>(roomId, {
   endpoint: import.meta.env.VITE_VIBESCALE_URL || 'https://vibescale.benallfree.com',
   stateChangeDetectorFn: (current, next) => {
     const hasChanged =

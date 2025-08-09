@@ -28,16 +28,35 @@ export class NetworkManager {
   }
 
   private initializeNetworkHandlers(): void {
+    // Clear all players when connected (fresh start)
+    room.on(RoomEventType.Connected, () => {
+      console.log('Connected to room - clearing all players')
+      // Clear all existing players since connections are ephemeral
+      this.playerManager.clearAllPlayers()
+    })
+
+    room.on(RoomEventType.Disconnected, () => {
+      console.log('Disconnected from room')
+      // Clear all players on disconnect
+      this.playerManager.clearAllPlayers()
+    })
+
     room.on(RoomEventType.PlayerJoined, (e) => {
       const { data: player } = e
       if (!player.id) return
-      console.log('player joined', e)
+      console.log('Player joined:', {
+        id: player.id,
+        isLocal: player.isLocal,
+        username: player.username,
+        position: player.position
+      })
       if (player.isLocal) {
         this.car.setPlayerId(player.id)
         this.car.setColor(player.color)
         const threePosition = new THREE.Vector3(player.position.x, player.position.y, player.position.z)
         this.car.setPosition(threePosition)
       } else {
+        console.log('Adding remote player to scene:', player.id)
         this.playerManager.updatePlayer(player)
       }
     })
@@ -45,7 +64,10 @@ export class NetworkManager {
     room.on(RoomEventType.PlayerUpdated, (e) => {
       const { data: player } = e
       if (!player.id) return
-      this.playerManager.updatePlayer(player)
+      // Only update non-local players
+      if (!player.isLocal) {
+        this.playerManager.updatePlayer(player)
+      }
     })
 
     room.on(RoomEventType.PlayerLeft, (e) => {
