@@ -15,16 +15,52 @@ export class KeyboardControls {
 
   private handleKeyDown(e: KeyboardEvent): void {
     const key = e.key.toLowerCase()
+    
+    // Handle WASD keys
     if (['w', 'a', 's', 'd'].includes(key)) {
       this.keys.add(key)
+      this.updateMoveState()
+      return
+    }
+    
+    // Handle arrow keys
+    if (e.key === 'ArrowUp') {
+      this.keys.add('arrowup')
+      this.updateMoveState()
+    } else if (e.key === 'ArrowDown') {
+      this.keys.add('arrowdown')
+      this.updateMoveState()
+    } else if (e.key === 'ArrowLeft') {
+      this.keys.add('arrowleft')
+      this.updateMoveState()
+    } else if (e.key === 'ArrowRight') {
+      this.keys.add('arrowright')
       this.updateMoveState()
     }
   }
 
   private handleKeyUp(e: KeyboardEvent): void {
     const key = e.key.toLowerCase()
+    
+    // Handle WASD keys
     if (['w', 'a', 's', 'd'].includes(key)) {
       this.keys.delete(key)
+      this.updateMoveState()
+      return
+    }
+    
+    // Handle arrow keys
+    if (e.key === 'ArrowUp') {
+      this.keys.delete('arrowup')
+      this.updateMoveState()
+    } else if (e.key === 'ArrowDown') {
+      this.keys.delete('arrowdown')
+      this.updateMoveState()
+    } else if (e.key === 'ArrowLeft') {
+      this.keys.delete('arrowleft')
+      this.updateMoveState()
+    } else if (e.key === 'ArrowRight') {
+      this.keys.delete('arrowright')
       this.updateMoveState()
     }
   }
@@ -33,13 +69,13 @@ export class KeyboardControls {
     // Reset move state
     this.moveState = { x: 0, y: 0 }
 
-    // Forward/Backward (W/S)
-    if (this.keys.has('w')) this.moveState.y += 1
-    if (this.keys.has('s')) this.moveState.y -= 1
+    // Forward/Backward (W/S or Arrow keys)
+    if (this.keys.has('w') || this.keys.has('arrowup')) this.moveState.y += 1
+    if (this.keys.has('s') || this.keys.has('arrowdown')) this.moveState.y -= 1
 
-    // Left/Right (A/D)
-    if (this.keys.has('a')) this.moveState.x -= 1
-    if (this.keys.has('d')) this.moveState.x += 1
+    // Left/Right (A/D or Arrow keys)
+    if (this.keys.has('a') || this.keys.has('arrowleft')) this.moveState.x -= 1
+    if (this.keys.has('d') || this.keys.has('arrowright')) this.moveState.x += 1
   }
 
   public getMoveState(): JoystickState {
