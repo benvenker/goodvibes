@@ -1,6 +1,7 @@
 export interface JoystickState {
   x: number
   y: number
+  boost?: boolean
 }
 
 export class TouchControls {

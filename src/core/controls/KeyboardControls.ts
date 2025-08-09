@@ -1,7 +1,7 @@
 import type { JoystickState } from './TouchControls'
 
 export class KeyboardControls {
-  private moveState: JoystickState = { x: 0, y: 0 }
+  private moveState: JoystickState = { x: 0, y: 0, boost: false }
   private keys = new Set<string>()
 
   constructor() {
@@ -19,6 +19,14 @@ export class KeyboardControls {
     // Handle WASD keys
     if (['w', 'a', 's', 'd'].includes(key)) {
       this.keys.add(key)
+      this.updateMoveState()
+      return
+    }
+    
+    // Handle spacebar for boost
+    if (e.key === ' ' || e.code === 'Space') {
+      e.preventDefault() // Prevent page scroll
+      this.keys.add('space')
       this.updateMoveState()
       return
     }
@@ -49,6 +57,13 @@ export class KeyboardControls {
       return
     }
     
+    // Handle spacebar for boost
+    if (e.key === ' ' || e.code === 'Space') {
+      this.keys.delete('space')
+      this.updateMoveState()
+      return
+    }
+    
     // Handle arrow keys
     if (e.key === 'ArrowUp') {
       this.keys.delete('arrowup')
@@ -67,7 +82,7 @@ export class KeyboardControls {
 
   private updateMoveState(): void {
     // Reset move state
-    this.moveState = { x: 0, y: 0 }
+    this.moveState = { x: 0, y: 0, boost: false }
 
     // Forward/Backward (W/S or Arrow keys)
     if (this.keys.has('w') || this.keys.has('arrowup')) this.moveState.y += 1
@@ -76,6 +91,9 @@ export class KeyboardControls {
     // Left/Right (A/D or Arrow keys)
     if (this.keys.has('a') || this.keys.has('arrowleft')) this.moveState.x -= 1
     if (this.keys.has('d') || this.keys.has('arrowright')) this.moveState.x += 1
+    
+    // Boost (Spacebar)
+    if (this.keys.has('space')) this.moveState.boost = true
   }
 
   public getMoveState(): JoystickState {

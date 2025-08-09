@@ -9,6 +9,7 @@ export class Car {
   private velocity: THREE.Vector3
   private velocityY = 0
   private isAirborne = false
+  private isBoosting = false
   private physics: CarPhysicsConfig
   private username?: string
   private playerId?: string
@@ -21,6 +22,7 @@ export class Car {
   private readonly CAR_LENGTH = 4
   private readonly GRAVITY = -30 // units/s²
   private readonly MIN_LAUNCH_VELOCITY = 10
+  private readonly BOOST_MULTIPLIER = 1.3 // 30% speed increase
   private polls: THREE.Mesh[] = []
   private obstacles: THREE.Mesh[] = []
   private walls: THREE.Mesh[] = []
@@ -184,6 +186,9 @@ export class Car {
   }
 
   public update(input: JoystickState, deltaTime: number): void {
+    // Update boost state
+    this.isBoosting = input.boost || false
+    
     // Update rotation based on input (works even when airborne for tricks!)
     if (Math.abs(input.x) > 0.1) {
       this.mesh.rotation.y -= input.x * this.physics.turnSpeed * deltaTime
@@ -193,10 +198,13 @@ export class Car {
     const forward = new THREE.Vector3(0, 0, 1)
     forward.applyAxisAngle(new THREE.Vector3(0, 1, 0), this.mesh.rotation.y)
 
+    // Apply boost multiplier to acceleration
+    const boostMultiplier = this.isBoosting ? this.BOOST_MULTIPLIER : 1.0
+    
     // Update velocity based on input (reduced control when airborne)
     if (Math.abs(input.y) > 0.1) {
       const controlMultiplier = this.isAirborne ? 0.3 : 1.0 // Less control in air
-      const acceleration = forward.multiplyScalar(input.y * this.physics.acceleration * deltaTime * controlMultiplier)
+      const acceleration = forward.multiplyScalar(input.y * this.physics.acceleration * deltaTime * controlMultiplier * boostMultiplier)
       this.velocity.add(acceleration)
     }
 
@@ -208,10 +216,11 @@ export class Car {
       this.velocity.multiplyScalar(1 - this.physics.friction * deltaTime * 0.1)
     }
 
-    // Limit speed
+    // Limit speed (also apply boost multiplier to max speed)
+    const maxSpeed = this.physics.maxSpeed * boostMultiplier
     const speed = this.velocity.length()
-    if (speed > this.physics.maxSpeed) {
-      this.velocity.multiplyScalar(this.physics.maxSpeed / speed)
+    if (speed > maxSpeed) {
+      this.velocity.multiplyScalar(maxSpeed / speed)
     }
 
     // Keep velocity in XZ plane
@@ -277,6 +286,10 @@ export class Car {
 
   public getCollisionPoint(): THREE.Vector3 | undefined {
     return this.lastCollisionPoint?.clone()
+  }
+
+  public getBoostState(): boolean {
+    return this.isBoosting
   }
 
   public setUsername(username: string): void {

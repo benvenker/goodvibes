@@ -79,6 +79,11 @@ export const ControlsOverlay = () => {
             ' / ',
             span({ class: 'kbd kbd-sm' }, '→'),
             ' - Turn Right'
+          ),
+          p(
+            span({ class: 'kbd kbd-sm' }, 'Space'),
+            ' - Turbo Boost (Hold)',
+            span({ class: 'text-xs text-warning ml-1' }, '+30% speed')
           )
         )
       ),
