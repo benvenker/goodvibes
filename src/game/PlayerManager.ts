@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { PlayerId } from 'vibescale'
+import { NETWORK, TIMING } from '../config/constants'
 import { createCarMesh } from '../utils/createCarMesh'
 import { AudioManager } from './AudioManager'
 import { Player } from './store'
@@ -21,7 +22,7 @@ export class PlayerManager {
   private players = new Map<PlayerId, PlayerObjects>()
   private interpolationStates = new Map<PlayerId, InterpolationState>()
   private scene: THREE.Scene
-  private readonly INTERPOLATION_DURATION = 0.1 // 100ms interpolation
+  private readonly INTERPOLATION_DURATION = NETWORK.INTERPOLATION_DURATION_SECONDS
   private audioManager?: AudioManager
 
   constructor(scene: THREE.Scene) {
@@ -112,8 +113,8 @@ export class PlayerManager {
       const playerObjects = this.players.get(playerId)
       if (!playerObjects) return
 
-      const timeDelta = (currentTime - state.lastUpdateTime) / 1000
-      const alpha = Math.min(timeDelta / this.INTERPOLATION_DURATION, 1)
+      const timeDelta = (currentTime - state.lastUpdateTime) / TIMING.MS_TO_SECONDS
+      const alpha = Math.min(timeDelta / this.INTERPOLATION_DURATION, TIMING.INTERPOLATION_ALPHA_MAX)
 
       // Interpolate position
       playerObjects.group.position.lerpVectors(state.currentPosition, state.targetPosition, alpha)

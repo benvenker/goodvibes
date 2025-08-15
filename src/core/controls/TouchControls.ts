@@ -1,3 +1,5 @@
+import { UI } from '../../config/constants'
+
 export interface JoystickState {
   x: number
   y: number
@@ -46,7 +48,7 @@ export class TouchControls {
 
     const dx = e.clientX - this.activeMouseJoystick.startX
     const dy = e.clientY - this.activeMouseJoystick.startY
-    const distance = Math.min(Math.sqrt(dx * dx + dy * dy), 35)
+    const distance = Math.min(Math.sqrt(dx * dx + dy * dy), UI.JOYSTICK.MAX_DISTANCE)
     const angle = Math.atan2(dy, dx)
 
     const x = Math.cos(angle) * distance
@@ -57,13 +59,13 @@ export class TouchControls {
 
     if (this.activeMouseJoystick.joystick === this.moveJoystick) {
       this.moveState = {
-        x: x / 35,
-        y: -y / 35,
+        x: x / UI.JOYSTICK.MAX_DISTANCE,
+        y: -y / UI.JOYSTICK.MAX_DISTANCE,
       }
     } else {
       this.rotateState = {
-        x: x / 35,
-        y: -y / 35,
+        x: x / UI.JOYSTICK.MAX_DISTANCE,
+        y: -y / UI.JOYSTICK.MAX_DISTANCE,
       }
     }
   }
@@ -112,7 +114,7 @@ export class TouchControls {
 
       const dx = touch.clientX - touchData.startX
       const dy = touch.clientY - touchData.startY
-      const distance = Math.min(Math.sqrt(dx * dx + dy * dy), 35)
+      const distance = Math.min(Math.sqrt(dx * dx + dy * dy), UI.JOYSTICK.MAX_DISTANCE)
       const angle = Math.atan2(dy, dx)
 
       const x = Math.cos(angle) * distance
@@ -123,13 +125,13 @@ export class TouchControls {
 
       if (touchData.joystick === this.moveJoystick) {
         this.moveState = {
-          x: x / 35,
-          y: -y / 35,
+          x: x / UI.JOYSTICK.MAX_DISTANCE,
+          y: -y / UI.JOYSTICK.MAX_DISTANCE,
         }
       } else {
         this.rotateState = {
-          x: x / 35,
-          y: -y / 35,
+          x: x / UI.JOYSTICK.MAX_DISTANCE,
+          y: -y / UI.JOYSTICK.MAX_DISTANCE,
         }
       }
     })
