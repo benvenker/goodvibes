@@ -86,10 +86,19 @@ export class VibescaleWidget {
     this.totalMsgsInSpan.textContent = '0'
     this.totalMsgsOutSpan = document.createElement('span')
     this.totalMsgsOutSpan.textContent = '0'
-    this.totalMsgsDiv.innerHTML = 'Total msgs in: '
+    
+    // Build DOM properly without innerHTML
+    const totalMsgsInLabel = document.createTextNode('Total msgs in: ')
+    this.totalMsgsDiv.appendChild(totalMsgsInLabel)
     this.totalMsgsDiv.appendChild(this.totalMsgsInSpan)
-    this.totalMsgsDiv.innerHTML += '<br>Total msgs out: '
+    
+    const lineBreak = document.createElement('br')
+    this.totalMsgsDiv.appendChild(lineBreak)
+    
+    const totalMsgsOutLabel = document.createTextNode('Total msgs out: ')
+    this.totalMsgsDiv.appendChild(totalMsgsOutLabel)
     this.totalMsgsDiv.appendChild(this.totalMsgsOutSpan)
+    
     this.statsContainer.appendChild(this.totalMsgsDiv)
 
     // Bytes stats
@@ -106,8 +115,10 @@ export class VibescaleWidget {
     this.bytesDiv.appendChild(this.bytesInSpan)
     this.bytesDiv.appendChild(this.bytesInSparkline.getElement())
     
-    const bytesOutLabel = document.createElement('span')
-    bytesOutLabel.innerHTML = '<br>KB/s out: '
+    const bytesBreak = document.createElement('br')
+    this.bytesDiv.appendChild(bytesBreak)
+    
+    const bytesOutLabel = document.createTextNode('KB/s out: ')
     this.bytesDiv.appendChild(bytesOutLabel)
     this.bytesDiv.appendChild(this.bytesOutSpan)
     this.bytesDiv.appendChild(this.bytesOutSparkline.getElement())
@@ -126,8 +137,10 @@ export class VibescaleWidget {
     this.msgsDiv.appendChild(this.msgsInSpan)
     this.msgsDiv.appendChild(this.msgsInSparkline.getElement())
     
-    const msgsOutLabel = document.createElement('span')
-    msgsOutLabel.innerHTML = '<br>Msgs/s out: '
+    const msgsBreak = document.createElement('br')
+    this.msgsDiv.appendChild(msgsBreak)
+    
+    const msgsOutLabel = document.createTextNode('Msgs/s out: ')
     this.msgsDiv.appendChild(msgsOutLabel)
     this.msgsDiv.appendChild(this.msgsOutSpan)
     this.msgsDiv.appendChild(this.msgsOutSparkline.getElement())

@@ -59,24 +59,14 @@ export class ResourceManager {
       }
     }
 
-    // Dispose of geometry and material if it's a mesh
-    if (object instanceof THREE.Mesh) {
-      if (object.geometry) {
-        this.disposeGeometry(object.geometry)
-      }
-      if (object.material) {
-        this.disposeMaterial(object.material)
-      }
+    // Dispose of geometry if the object has one (works for Mesh, Line, Points, InstancedMesh, etc.)
+    if ('geometry' in object && object.geometry) {
+      this.disposeGeometry(object.geometry as THREE.BufferGeometry)
     }
 
-    // Dispose of line materials
-    if (object instanceof THREE.Line) {
-      if (object.geometry) {
-        this.disposeGeometry(object.geometry)
-      }
-      if (object.material) {
-        this.disposeMaterial(object.material)
-      }
+    // Dispose of material(s) if the object has them
+    if ('material' in object && object.material) {
+      this.disposeMaterial(object.material as THREE.Material | THREE.Material[])
     }
 
     // Clear any references
