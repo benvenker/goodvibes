@@ -103,7 +103,7 @@ export class PlayerManager {
       const playerObjects = this.players.get(playerId)
       if (!playerObjects) return
 
-      const timeDelta = (currentTime - state.lastUpdateTime) / TIMING.MILLISECONDS_PER_SECOND
+      const timeDelta = (currentTime - state.lastUpdateTime) / TIMING.MS_TO_SECONDS
       const alpha = Math.min(timeDelta / this.INTERPOLATION_DURATION, 1)
 
       // Interpolate position
