@@ -245,7 +245,7 @@ export class Car {
     this.username = username
     // Recreate car mesh with new username
     const oldPosition = Vector3Pool.acquire().copy(this.mesh.position)
-    const oldRotation = Vector3Pool.acquire().copy(this.mesh.rotation)
+    const oldRotation = this.mesh.rotation.clone() // Euler, not Vector3
     const bodyMesh = this.mesh.children[0] as THREE.Mesh
     const oldColor = (bodyMesh.material as THREE.MeshPhongMaterial).color
 
@@ -267,9 +267,8 @@ export class Car {
     this.mesh.position.copy(oldPosition)
     this.mesh.rotation.copy(oldRotation)
     
-    // Release the pooled vectors
+    // Release the pooled vector (not the Euler rotation)
     Vector3Pool.release(oldPosition)
-    Vector3Pool.release(oldRotation)
 
     // Add back to scene if it was in one
     if (scene) {

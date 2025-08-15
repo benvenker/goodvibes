@@ -1,6 +1,5 @@
 import * as THREE from 'three'
 import { RoomEventType } from 'vibescale'
-import { EventEmitter } from '../utils/EventEmitter'
 import { Car } from './Car'
 import { PlayerManager } from './PlayerManager'
 import { UserManager } from './UserManager'
@@ -10,7 +9,7 @@ export class NetworkManager {
   constructor(
     private playerManager: PlayerManager,
     private car: Car,
-    private userManager: UserManager & EventEmitter,
+    private userManager: UserManager,
     private updateInterval: number = 50
   ) {
     console.log('NetworkManager constructor', { username: this.userManager.getUsername() })
