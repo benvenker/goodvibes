@@ -1,5 +1,6 @@
 /// <reference types="vite/client" />
 import * as THREE from 'three'
+import { AUDIO } from '../config/constants'
 import backgroundMusic from '../../assets/background.mp3'
 import { Player, room } from './store'
 
@@ -49,7 +50,7 @@ export class AudioManager {
       if (this.backgroundMusic) {
         this.backgroundMusic.setBuffer(buffer)
         this.backgroundMusic.setLoop(true)
-        this.backgroundMusic.setVolume(0.05) // Set initial volume to 5%
+        this.backgroundMusic.setVolume(AUDIO.DEFAULT_VOLUME) // Set initial volume
 
         // After initialization, sync with store
         const localPlayer = room.getLocalPlayer()
@@ -57,7 +58,7 @@ export class AudioManager {
         if (!localPlayer?.audioPreferences?.isMuted && this.shouldPlayOnLoad) {
           this.backgroundMusic.play()
         }
-        this.backgroundMusic.setVolume(localPlayer?.audioPreferences?.volume ?? 0.05)
+        this.backgroundMusic.setVolume(localPlayer?.audioPreferences?.volume ?? AUDIO.DEFAULT_VOLUME)
       }
     } catch (error) {
       console.error('Failed to load background music:', error)
@@ -70,8 +71,8 @@ export class AudioManager {
         try {
           const buffer = await this.loadAudioBuffer(file)
           sound.setBuffer(buffer)
-          sound.setRefDistance(5)
-          sound.setRolloffFactor(2)
+          sound.setRefDistance(AUDIO.SPATIAL.REFERENCE_DISTANCE)
+          sound.setRolloffFactor(AUDIO.SPATIAL.ROLLOFF_FACTOR)
           this.smashSounds.push(sound)
         } catch (error) {
           console.error(`Failed to load smash sound ${i + 1}:`, error)
@@ -86,8 +87,8 @@ export class AudioManager {
         try {
           const buffer = await this.loadAudioBuffer(file)
           sound.setBuffer(buffer)
-          sound.setRefDistance(5)
-          sound.setRolloffFactor(2)
+          sound.setRefDistance(AUDIO.SPATIAL.REFERENCE_DISTANCE)
+          sound.setRolloffFactor(AUDIO.SPATIAL.ROLLOFF_FACTOR)
           this.screechSounds.push(sound)
         } catch (error) {
           console.error(`Failed to load screech sound ${i + 1}:`, error)
@@ -183,6 +184,6 @@ export class AudioManager {
 
     setTimeout(() => {
       this.scene.remove(soundObject)
-    }, duration + 100) // Add a small buffer to ensure sound completes
+    }, duration + AUDIO.CLEANUP_BUFFER_MS) // Add a small buffer to ensure sound completes
   }
 }
