@@ -4,6 +4,7 @@ import { CameraController } from '../core/CameraController'
 import { KeyboardControls } from '../core/controls/KeyboardControls'
 import { TouchControls } from '../core/controls/TouchControls'
 import { SplashScreen } from '../ui/SplashScreen'
+import { ResourceManager, Vector3Pool, QuaternionPool } from '../utils/resourceManager'
 import { AudioManager } from './AudioManager'
 import { Car } from './Car'
 import { DebugPanel } from './DebugPanel/DebugPanel'
@@ -194,5 +195,74 @@ export class Game {
     this.cameraController.update(this.car.getMesh())
 
     this.renderer.render(this.scene, this.camera)
+  }
+
+  /**
+   * Cleanup and dispose of all game resources
+   */
+  public dispose(): void {
+    // Stop animation loop
+    this.isInitialized = false
+
+    // Dispose of managers
+    if (this.playerManager) {
+      this.playerManager.dispose()
+    }
+
+    if (this.car) {
+      this.car.dispose()
+    }
+
+    if (this.networkManager) {
+      this.networkManager.disconnect()
+    }
+
+    // Dispose of controls
+    if (this.keyboardControls) {
+      this.keyboardControls.dispose()
+    }
+
+    if (this.touchControls) {
+      this.touchControls.dispose()
+    }
+
+    // Dispose of Three.js objects
+    if (this.ground) {
+      ResourceManager.disposeObject3D(this.ground)
+    }
+
+    // Dispose of all obstacles
+    if (this.obstacleManager) {
+      const obstacles = this.obstacleManager.getObstacles()
+      obstacles.forEach(obstacle => {
+        ResourceManager.disposeObject3D(obstacle)
+      })
+    }
+
+    // Clear the scene
+    while (this.scene.children.length > 0) {
+      const child = this.scene.children[0]
+      if (child) {
+        this.scene.remove(child)
+        if (child instanceof THREE.Mesh || child instanceof THREE.Group) {
+          ResourceManager.disposeObject3D(child)
+        }
+      }
+    }
+
+    // Clear object pools
+    Vector3Pool.clear()
+    QuaternionPool.clear()
+
+    // Dispose of renderer
+    if (this.renderer) {
+      this.renderer.dispose()
+      this.renderer.domElement.remove()
+    }
+
+    // Remove event listeners
+    window.removeEventListener('resize', this.handleResize)
+
+    console.log(`Disposed ${ResourceManager.getDisposedCount()} resources`)
   }
 }

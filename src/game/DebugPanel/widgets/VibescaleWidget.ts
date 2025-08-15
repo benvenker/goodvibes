@@ -11,6 +11,14 @@ export class VibescaleWidget {
   private bytesDiv!: HTMLDivElement
   private msgsDiv!: HTMLDivElement
   private userInfoDiv!: HTMLDivElement
+  
+  // Cached DOM references for frequent updates
+  private bytesInSpan!: HTMLSpanElement
+  private bytesOutSpan!: HTMLSpanElement
+  private msgsInSpan!: HTMLSpanElement
+  private msgsOutSpan!: HTMLSpanElement
+  private totalMsgsInSpan!: HTMLSpanElement
+  private totalMsgsOutSpan!: HTMLSpanElement
 
   // Network metrics tracking
   private lastMetricsUpdate = performance.now()
@@ -35,6 +43,10 @@ export class VibescaleWidget {
   private bytesOutSparkline: Sparkline
   private msgsInSparkline: Sparkline
   private msgsOutSparkline: Sparkline
+
+  // Event listeners for cleanup
+  private rxListener?: (e: any) => void
+  private txListener?: (e: any) => void
 
   constructor(private car: Car) {
     // Initialize sparklines
@@ -70,24 +82,67 @@ export class VibescaleWidget {
     // Total messages
     this.totalMsgsDiv = document.createElement('div')
     this.totalMsgsDiv.style.marginBottom = '5px'
-    this.totalMsgsDiv.innerHTML =
-      'Total msgs in: <span id="total-msgs-in">0</span><br>Total msgs out: <span id="total-msgs-out">0</span>'
+    this.totalMsgsInSpan = document.createElement('span')
+    this.totalMsgsInSpan.textContent = '0'
+    this.totalMsgsOutSpan = document.createElement('span')
+    this.totalMsgsOutSpan.textContent = '0'
+    
+    // Build DOM properly without innerHTML
+    const totalMsgsInLabel = document.createTextNode('Total msgs in: ')
+    this.totalMsgsDiv.appendChild(totalMsgsInLabel)
+    this.totalMsgsDiv.appendChild(this.totalMsgsInSpan)
+    
+    const lineBreak = document.createElement('br')
+    this.totalMsgsDiv.appendChild(lineBreak)
+    
+    const totalMsgsOutLabel = document.createTextNode('Total msgs out: ')
+    this.totalMsgsDiv.appendChild(totalMsgsOutLabel)
+    this.totalMsgsDiv.appendChild(this.totalMsgsOutSpan)
+    
     this.statsContainer.appendChild(this.totalMsgsDiv)
 
     // Bytes stats
     this.bytesDiv = document.createElement('div')
     this.bytesDiv.style.marginBottom = '5px'
-    this.bytesDiv.innerHTML = 'KB/s in: <span id="bytes-in">0</span>'
+    this.bytesInSpan = document.createElement('span')
+    this.bytesInSpan.textContent = '0'
+    this.bytesOutSpan = document.createElement('span')
+    this.bytesOutSpan.textContent = '0'
+    
+    const bytesInLabel = document.createElement('span')
+    bytesInLabel.textContent = 'KB/s in: '
+    this.bytesDiv.appendChild(bytesInLabel)
+    this.bytesDiv.appendChild(this.bytesInSpan)
     this.bytesDiv.appendChild(this.bytesInSparkline.getElement())
-    this.bytesDiv.innerHTML += '<br>KB/s out: <span id="bytes-out">0</span>'
+    
+    const bytesBreak = document.createElement('br')
+    this.bytesDiv.appendChild(bytesBreak)
+    
+    const bytesOutLabel = document.createTextNode('KB/s out: ')
+    this.bytesDiv.appendChild(bytesOutLabel)
+    this.bytesDiv.appendChild(this.bytesOutSpan)
     this.bytesDiv.appendChild(this.bytesOutSparkline.getElement())
     this.statsContainer.appendChild(this.bytesDiv)
 
     // Messages stats
     this.msgsDiv = document.createElement('div')
-    this.msgsDiv.innerHTML = 'Msgs/s in: <span id="msgs-in">0</span>'
+    this.msgsInSpan = document.createElement('span')
+    this.msgsInSpan.textContent = '0'
+    this.msgsOutSpan = document.createElement('span')
+    this.msgsOutSpan.textContent = '0'
+    
+    const msgsInLabel = document.createElement('span')
+    msgsInLabel.textContent = 'Msgs/s in: '
+    this.msgsDiv.appendChild(msgsInLabel)
+    this.msgsDiv.appendChild(this.msgsInSpan)
     this.msgsDiv.appendChild(this.msgsInSparkline.getElement())
-    this.msgsDiv.innerHTML += '<br>Msgs/s out: <span id="msgs-out">0</span>'
+    
+    const msgsBreak = document.createElement('br')
+    this.msgsDiv.appendChild(msgsBreak)
+    
+    const msgsOutLabel = document.createTextNode('Msgs/s out: ')
+    this.msgsDiv.appendChild(msgsOutLabel)
+    this.msgsDiv.appendChild(this.msgsOutSpan)
     this.msgsDiv.appendChild(this.msgsOutSparkline.getElement())
     this.statsContainer.appendChild(this.msgsDiv)
 
@@ -95,21 +150,24 @@ export class VibescaleWidget {
   }
 
   private setupWebSocketListeners() {
-    room.on(RoomEventType.Rx, (e) => {
+    this.rxListener = (e) => {
       const { data: message } = e
       this.totalBytesIn += message.length
       this.totalMsgsIn++
       this.currentSecondBytesIn += message.length
       this.currentSecondMsgsIn++
-    })
+    }
 
-    room.on(RoomEventType.Tx, (e) => {
+    this.txListener = (e) => {
       const { data: message } = e
       this.totalBytesOut += message.length
       this.totalMsgsOut++
       this.currentSecondBytesOut += message.length
       this.currentSecondMsgsOut++
-    })
+    }
+
+    room.on(RoomEventType.Rx, this.rxListener)
+    room.on(RoomEventType.Tx, this.txListener)
   }
 
   public getElement(): HTMLDivElement {
@@ -160,13 +218,13 @@ export class VibescaleWidget {
       this.msgsInSparkline.addValue(avgMsgsIn)
       this.msgsOutSparkline.addValue(avgMsgsOut)
 
-      // Update displays
-      document.getElementById('bytes-in')!.textContent = (avgBytesIn / 1024).toFixed(1)
-      document.getElementById('bytes-out')!.textContent = (avgBytesOut / 1024).toFixed(1)
-      document.getElementById('msgs-in')!.textContent = avgMsgsIn.toFixed(1)
-      document.getElementById('msgs-out')!.textContent = avgMsgsOut.toFixed(1)
-      document.getElementById('total-msgs-in')!.textContent = this.totalMsgsIn.toString()
-      document.getElementById('total-msgs-out')!.textContent = this.totalMsgsOut.toString()
+      // Update displays using cached references
+      this.bytesInSpan.textContent = (avgBytesIn / 1024).toFixed(1)
+      this.bytesOutSpan.textContent = (avgBytesOut / 1024).toFixed(1)
+      this.msgsInSpan.textContent = avgMsgsIn.toFixed(1)
+      this.msgsOutSpan.textContent = avgMsgsOut.toFixed(1)
+      this.totalMsgsInSpan.textContent = this.totalMsgsIn.toString()
+      this.totalMsgsOutSpan.textContent = this.totalMsgsOut.toString()
 
       // Update user info
       this.userInfoDiv.innerHTML =
@@ -174,6 +232,30 @@ export class VibescaleWidget {
         `Player ID: ${this.car.getPlayerId() || 'Not connected'}`
 
       this.lastMetricsUpdate = now
+    }
+  }
+
+  /**
+   * Clean up resources and remove event listeners
+   */
+  public dispose(): void {
+    // Remove WebSocket event listeners
+    if (this.rxListener) {
+      room.off(RoomEventType.Rx, this.rxListener)
+      this.rxListener = undefined
+    }
+    
+    if (this.txListener) {
+      room.off(RoomEventType.Tx, this.txListener)
+      this.txListener = undefined
+    }
+
+    // Clear sparkline resources
+    // Note: Sparkline class would need dispose method if it holds canvas contexts or other resources
+    
+    // Remove DOM element
+    if (this.container.parentNode) {
+      this.container.parentNode.removeChild(this.container)
     }
   }
 }

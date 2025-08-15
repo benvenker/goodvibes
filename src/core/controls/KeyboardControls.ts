@@ -3,14 +3,18 @@ import type { JoystickState } from './TouchControls'
 export class KeyboardControls {
   private moveState: JoystickState = { x: 0, y: 0 }
   private keys = new Set<string>()
+  private keyDownHandler: (e: KeyboardEvent) => void
+  private keyUpHandler: (e: KeyboardEvent) => void
 
   constructor() {
+    this.keyDownHandler = (e) => this.handleKeyDown(e)
+    this.keyUpHandler = (e) => this.handleKeyUp(e)
     this.setupKeyboardEvents()
   }
 
   private setupKeyboardEvents(): void {
-    document.addEventListener('keydown', (e) => this.handleKeyDown(e))
-    document.addEventListener('keyup', (e) => this.handleKeyUp(e))
+    document.addEventListener('keydown', this.keyDownHandler)
+    document.addEventListener('keyup', this.keyUpHandler)
   }
 
   private handleKeyDown(e: KeyboardEvent): void {
@@ -44,5 +48,11 @@ export class KeyboardControls {
 
   public getMoveState(): JoystickState {
     return this.moveState
+  }
+
+  public dispose(): void {
+    document.removeEventListener('keydown', this.keyDownHandler)
+    document.removeEventListener('keyup', this.keyUpHandler)
+    this.keys.clear()
   }
 }

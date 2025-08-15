@@ -166,4 +166,21 @@ export class DebugPanel {
 
     requestAnimationFrame(() => this.update())
   }
+
+  /**
+   * Clean up resources and remove event listeners
+   */
+  public dispose(): void {
+    // Dispose of widgets
+    this.vibescaleWidget.dispose()
+    
+    // Remove DOM element
+    if (this.container.parentNode) {
+      this.container.parentNode.removeChild(this.container)
+    }
+    
+    // Restore original console.error if we modified it
+    // This would require storing the original reference, but for now we'll leave it
+    // since console.error modifications are typically global for debugging
+  }
 }
