@@ -47,15 +47,16 @@ export class PlayerManager {
 
     // Position the player
     playerGroup.position.set(player.position.x, player.position.y, player.position.z)
-    const rotation = new THREE.Vector3(player.rotation.x, player.rotation.y, player.rotation.z)
+    const rotation = Vector3Pool.acquire(player.rotation.x, player.rotation.y, player.rotation.z)
     playerGroup.rotation.setFromVector3(rotation)
+    Vector3Pool.release(rotation)
 
     // Initialize interpolation state
     this.interpolationStates.set(player.id, {
-      currentPosition: playerGroup.position.clone(),
-      targetPosition: playerGroup.position.clone(),
-      currentRotation: new THREE.Vector3().setFromEuler(playerGroup.rotation),
-      targetRotation: rotation.clone(),
+      currentPosition: Vector3Pool.acquire().copy(playerGroup.position),
+      targetPosition: Vector3Pool.acquire().copy(playerGroup.position),
+      currentRotation: Vector3Pool.acquire().setFromEuler(playerGroup.rotation),
+      targetRotation: Vector3Pool.acquire().copy(rotation),
       lastUpdateTime: performance.now(),
     })
 
@@ -75,8 +76,9 @@ export class PlayerManager {
 
     // Play collision sounds if the player has collided
     if (player.hasCollided && player.collisionPoint && this.audioManager) {
-      const soundPosition = new THREE.Vector3(player.collisionPoint.x, player.collisionPoint.y, player.collisionPoint.z)
+      const soundPosition = Vector3Pool.acquire(player.collisionPoint.x, player.collisionPoint.y, player.collisionPoint.z)
       this.audioManager.playCollisionSounds(soundPosition)
+      Vector3Pool.release(soundPosition)
     }
 
     // Update username if changed
@@ -122,9 +124,10 @@ export class PlayerManager {
       playerObjects.group.position.lerpVectors(state.currentPosition, state.targetPosition, alpha)
 
       // Interpolate rotation
-      const interpolatedRotation = new THREE.Vector3()
+      const interpolatedRotation = Vector3Pool.acquire()
       interpolatedRotation.lerpVectors(state.currentRotation, state.targetRotation, alpha)
       playerObjects.group.rotation.setFromVector3(interpolatedRotation)
+      Vector3Pool.release(interpolatedRotation)
     })
   }
 
@@ -136,9 +139,10 @@ export class PlayerManager {
     this.scene.remove(playerObjects.group)
     ResourceManager.disposeObject3D(playerObjects.group)
     
-    // Clear interpolation state
+    // Clear interpolation state and release pooled Vector3 instances
     const interpolationState = this.interpolationStates.get(playerId)
     if (interpolationState) {
+      // These were acquired from the pool, so we can safely release them
       Vector3Pool.release(interpolationState.currentPosition)
       Vector3Pool.release(interpolationState.targetPosition)
       Vector3Pool.release(interpolationState.currentRotation)

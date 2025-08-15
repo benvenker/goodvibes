@@ -44,6 +44,10 @@ export class VibescaleWidget {
   private msgsInSparkline: Sparkline
   private msgsOutSparkline: Sparkline
 
+  // Event listeners for cleanup
+  private rxListener?: (e: any) => void
+  private txListener?: (e: any) => void
+
   constructor(private car: Car) {
     // Initialize sparklines
     this.bytesInSparkline = new Sparkline(60, 20, '#4ade80') // Green
@@ -133,21 +137,24 @@ export class VibescaleWidget {
   }
 
   private setupWebSocketListeners() {
-    room.on(RoomEventType.Rx, (e) => {
+    this.rxListener = (e) => {
       const { data: message } = e
       this.totalBytesIn += message.length
       this.totalMsgsIn++
       this.currentSecondBytesIn += message.length
       this.currentSecondMsgsIn++
-    })
+    }
 
-    room.on(RoomEventType.Tx, (e) => {
+    this.txListener = (e) => {
       const { data: message } = e
       this.totalBytesOut += message.length
       this.totalMsgsOut++
       this.currentSecondBytesOut += message.length
       this.currentSecondMsgsOut++
-    })
+    }
+
+    room.on(RoomEventType.Rx, this.rxListener)
+    room.on(RoomEventType.Tx, this.txListener)
   }
 
   public getElement(): HTMLDivElement {
@@ -212,6 +219,30 @@ export class VibescaleWidget {
         `Player ID: ${this.car.getPlayerId() || 'Not connected'}`
 
       this.lastMetricsUpdate = now
+    }
+  }
+
+  /**
+   * Clean up resources and remove event listeners
+   */
+  public dispose(): void {
+    // Remove WebSocket event listeners
+    if (this.rxListener) {
+      room.off(RoomEventType.Rx, this.rxListener)
+      this.rxListener = undefined
+    }
+    
+    if (this.txListener) {
+      room.off(RoomEventType.Tx, this.txListener)
+      this.txListener = undefined
+    }
+
+    // Clear sparkline resources
+    // Note: Sparkline class would need dispose method if it holds canvas contexts or other resources
+    
+    // Remove DOM element
+    if (this.container.parentNode) {
+      this.container.parentNode.removeChild(this.container)
     }
   }
 }
