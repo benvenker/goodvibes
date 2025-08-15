@@ -1,6 +1,8 @@
 import * as THREE from 'three'
 import { PlayerId } from 'vibescale'
+import { NETWORK, TIMING } from '../config/constants'
 import { createCarMesh } from '../utils/createCarMesh'
+import { updateCarUsername } from '../utils/updateCarUsername'
 import { AudioManager } from './AudioManager'
 import { Player } from './store'
 import { ResourceManager, Vector3Pool } from '../utils/resourceManager'
@@ -22,7 +24,7 @@ export class PlayerManager {
   private players = new Map<PlayerId, PlayerObjects>()
   private interpolationStates = new Map<PlayerId, InterpolationState>()
   private scene: THREE.Scene
-  private readonly INTERPOLATION_DURATION = 0.1 // 100ms interpolation
+  private readonly INTERPOLATION_DURATION = NETWORK.INTERPOLATION_DURATION_SECONDS
   private audioManager?: AudioManager
 
   constructor(scene: THREE.Scene) {
@@ -56,7 +58,7 @@ export class PlayerManager {
       currentPosition: Vector3Pool.acquire().copy(playerGroup.position),
       targetPosition: Vector3Pool.acquire().copy(playerGroup.position),
       currentRotation: Vector3Pool.acquire().setFromEuler(playerGroup.rotation),
-      targetRotation: Vector3Pool.acquire().copy(rotation),
+      targetRotation: Vector3Pool.acquire(player.rotation.x, player.rotation.y, player.rotation.z),
       lastUpdateTime: performance.now(),
     })
 
@@ -81,25 +83,9 @@ export class PlayerManager {
       Vector3Pool.release(soundPosition)
     }
 
-    // Update username if changed
+    // Update username if changed (more efficiently)
     if (player.username !== playerObjects.group.userData.username) {
-      // For now, recreate the mesh with updated username
-      // TODO: Optimize this by updating only the text textures
-      this.scene.remove(playerObjects.group)
-      ResourceManager.disposeObject3D(playerObjects.group)
-
-      // Create new group with updated username
-      const newGroup = createCarMesh({
-        bodyColor: player.color,
-        username: player.username,
-      })
-      newGroup.position.copy(interpolationState.currentPosition)
-      newGroup.rotation.setFromVector3(interpolationState.currentRotation)
-      newGroup.userData.username = player.username
-
-      // Update references
-      playerObjects.group = newGroup
-      this.scene.add(newGroup)
+      updateCarUsername(playerObjects.group, player.username)
     }
 
     // Update interpolation targets
@@ -117,7 +103,7 @@ export class PlayerManager {
       const playerObjects = this.players.get(playerId)
       if (!playerObjects) return
 
-      const timeDelta = (currentTime - state.lastUpdateTime) / 1000
+      const timeDelta = (currentTime - state.lastUpdateTime) / TIMING.MILLISECONDS_PER_SECOND
       const alpha = Math.min(timeDelta / this.INTERPOLATION_DURATION, 1)
 
       // Interpolate position

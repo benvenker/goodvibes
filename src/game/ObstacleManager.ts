@@ -1,12 +1,13 @@
 import * as THREE from 'three'
+import { ARENA, OBSTACLES } from '../config/constants'
 
 export class ObstacleManager {
   private scene: THREE.Scene
   private polls: THREE.Mesh[] = []
   private obstacles: THREE.Mesh[] = []
   private walls: THREE.Mesh[] = []
-  private readonly ARENA_SIZE = 50 // Half-size of the arena
-  private readonly WALL_HEIGHT = 5
+  private readonly ARENA_SIZE = ARENA.HALF_SIZE // Half-size of the arena
+  private readonly WALL_HEIGHT = ARENA.WALL_HEIGHT
 
   constructor(scene: THREE.Scene) {
     this.scene = scene
@@ -20,7 +21,7 @@ export class ObstacleManager {
   }
 
   private createBoxObstacles(): void {
-    const obstacleGeometry = new THREE.BoxGeometry(3, 3, 3)
+    const obstacleGeometry = new THREE.BoxGeometry(OBSTACLES.BOX.SIZE, OBSTACLES.BOX.SIZE, OBSTACLES.BOX.SIZE)
     const obstacleMaterial = new THREE.MeshPhongMaterial({ color: 0x8b4513 })
 
     const obstaclePositions = [
@@ -34,7 +35,7 @@ export class ObstacleManager {
 
     obstaclePositions.forEach((pos) => {
       const obstacle = new THREE.Mesh(obstacleGeometry, obstacleMaterial)
-      obstacle.position.set(pos.x, 1.5, pos.z)
+      obstacle.position.set(pos.x, OBSTACLES.BOX.Y_POSITION, pos.z)
       obstacle.castShadow = true
       obstacle.receiveShadow = true
       obstacle.userData.type = 'obstacle'
@@ -44,7 +45,7 @@ export class ObstacleManager {
   }
 
   private createPollObstacles(): void {
-    const cylinderGeometry = new THREE.CylinderGeometry(1, 1, 4, 32)
+    const cylinderGeometry = new THREE.CylinderGeometry(OBSTACLES.POLL.RADIUS, OBSTACLES.POLL.RADIUS, OBSTACLES.POLL.HEIGHT, OBSTACLES.POLL.SEGMENTS)
     const cylinderMaterial = new THREE.MeshPhongMaterial({ color: 0x4a4a4a })
 
     const cylinderPositions = [
@@ -56,7 +57,7 @@ export class ObstacleManager {
 
     cylinderPositions.forEach((pos) => {
       const cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial)
-      cylinder.position.set(pos.x, 2, pos.z)
+      cylinder.position.set(pos.x, OBSTACLES.POLL.Y_POSITION, pos.z)
       cylinder.castShadow = true
       cylinder.receiveShadow = true
       cylinder.userData.type = 'poll'

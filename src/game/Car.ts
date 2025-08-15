@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { CarPhysicsConfig, defaultCarPhysics } from '../config/carPhysics'
+import { PHYSICS } from '../config/constants'
 import type { JoystickState } from '../core/controls/TouchControls'
 import { createCarMesh } from '../utils/createCarMesh'
 import { AudioManager } from './AudioManager'
@@ -16,8 +17,8 @@ export class Car {
   private collisionReported = false
   private lastCollisionPoint?: THREE.Vector3
   private readonly boundingBox: THREE.Box3
-  private readonly CAR_WIDTH = 2
-  private readonly CAR_LENGTH = 4
+  private readonly CAR_WIDTH = PHYSICS.CAR.WIDTH
+  private readonly CAR_LENGTH = PHYSICS.CAR.LENGTH
   private polls: THREE.Mesh[] = []
   private obstacles: THREE.Mesh[] = []
   private walls: THREE.Mesh[] = []
@@ -55,7 +56,6 @@ export class Car {
     this.boundingBox.setFromObject(this.mesh)
     let collided = false
     let collisionPoint: THREE.Vector3 | undefined
-    const IMPACT_VELOCITY_THRESHOLD = 5 // Only count as collision if impact speed is above this
 
     // Check all collidable objects
     const allObjects = [...this.walls, ...this.obstacles, ...this.polls]
@@ -73,13 +73,13 @@ export class Car {
           this.mesh.position.x += overlap.x * (this.boundingBox.min.x < objBox.min.x ? -1 : 1)
 
           // Only apply bounce effects if impact is significant
-          if (Math.abs(this.velocity.x) > IMPACT_VELOCITY_THRESHOLD) {
+          if (Math.abs(this.velocity.x) > PHYSICS.MOVEMENT.IMPACT_VELOCITY_THRESHOLD) {
             collided = true
             // Release old collision point if exists
             if (this.lastCollisionPoint) {
               Vector3Pool.release(this.lastCollisionPoint)
             }
-            collisionPoint = Vector3Pool.acquire(obj.position.x, 1, obj.position.z)
+            collisionPoint = Vector3Pool.acquire(obj.position.x, PHYSICS.CAR.COLLISION_POINT_HEIGHT, obj.position.z)
             this.lastCollisionPoint = collisionPoint
             this.velocity.x *= -this.physics.bounceRestitution
           } else {
@@ -91,13 +91,13 @@ export class Car {
           this.mesh.position.z += overlap.z * (this.boundingBox.min.z < objBox.min.z ? -1 : 1)
 
           // Only apply bounce effects if impact is significant
-          if (Math.abs(this.velocity.z) > IMPACT_VELOCITY_THRESHOLD) {
+          if (Math.abs(this.velocity.z) > PHYSICS.MOVEMENT.IMPACT_VELOCITY_THRESHOLD) {
             collided = true
             // Release old collision point if exists
             if (this.lastCollisionPoint) {
               Vector3Pool.release(this.lastCollisionPoint)
             }
-            collisionPoint = Vector3Pool.acquire(obj.position.x, 1, obj.position.z)
+            collisionPoint = Vector3Pool.acquire(obj.position.x, PHYSICS.CAR.COLLISION_POINT_HEIGHT, obj.position.z)
             this.lastCollisionPoint = collisionPoint
             this.velocity.z *= -this.physics.bounceRestitution
           } else {
@@ -105,7 +105,7 @@ export class Car {
             this.velocity.z = 0
           }
         }
-        this.mesh.position.y = 0
+        this.mesh.position.y = PHYSICS.WORLD.GROUND_LEVEL
         Vector3Pool.release(overlap)
         break
       }
@@ -127,13 +127,13 @@ export class Car {
           this.mesh.position.x += overlap.x * (this.boundingBox.min.x < otherBox.min.x ? -1 : 1)
 
           // Only apply bounce effects if impact is significant
-          if (Math.abs(this.velocity.x) > IMPACT_VELOCITY_THRESHOLD) {
+          if (Math.abs(this.velocity.x) > PHYSICS.MOVEMENT.IMPACT_VELOCITY_THRESHOLD) {
             collided = true
             // Release old collision point if exists
             if (this.lastCollisionPoint) {
               Vector3Pool.release(this.lastCollisionPoint)
             }
-            collisionPoint = Vector3Pool.acquire(otherCar.position.x, 1, otherCar.position.z)
+            collisionPoint = Vector3Pool.acquire(otherCar.position.x, PHYSICS.CAR.COLLISION_POINT_HEIGHT, otherCar.position.z)
             this.lastCollisionPoint = collisionPoint
             this.velocity.x *= -this.physics.bounceRestitution
           } else {
@@ -145,13 +145,13 @@ export class Car {
           this.mesh.position.z += overlap.z * (this.boundingBox.min.z < otherBox.min.z ? -1 : 1)
 
           // Only apply bounce effects if impact is significant
-          if (Math.abs(this.velocity.z) > IMPACT_VELOCITY_THRESHOLD) {
+          if (Math.abs(this.velocity.z) > PHYSICS.MOVEMENT.IMPACT_VELOCITY_THRESHOLD) {
             collided = true
             // Release old collision point if exists
             if (this.lastCollisionPoint) {
               Vector3Pool.release(this.lastCollisionPoint)
             }
-            collisionPoint = Vector3Pool.acquire(otherCar.position.x, 1, otherCar.position.z)
+            collisionPoint = Vector3Pool.acquire(otherCar.position.x, PHYSICS.CAR.COLLISION_POINT_HEIGHT, otherCar.position.z)
             this.lastCollisionPoint = collisionPoint
             this.velocity.z *= -this.physics.bounceRestitution
           } else {
@@ -159,7 +159,7 @@ export class Car {
             this.velocity.z = 0
           }
         }
-        this.mesh.position.y = 0
+        this.mesh.position.y = PHYSICS.WORLD.GROUND_LEVEL
         Vector3Pool.release(overlap)
         break
       }
@@ -170,7 +170,7 @@ export class Car {
 
   public update(input: JoystickState, deltaTime: number): void {
     // Update rotation based on input
-    if (Math.abs(input.x) > 0.1) {
+    if (Math.abs(input.x) > PHYSICS.MOVEMENT.INPUT_DEADZONE) {
       this.mesh.rotation.y -= input.x * this.physics.turnSpeed * deltaTime
     }
 
@@ -181,7 +181,7 @@ export class Car {
     Vector3Pool.release(yAxis)
 
     // Update velocity based on input
-    if (Math.abs(input.y) > 0.1) {
+    if (Math.abs(input.y) > PHYSICS.MOVEMENT.INPUT_DEADZONE) {
       const acceleration = forward.multiplyScalar(input.y * this.physics.acceleration * deltaTime)
       this.velocity.add(acceleration)
     }
@@ -199,12 +199,12 @@ export class Car {
     }
 
     // Keep velocity in XZ plane
-    this.velocity.y = 0
+    this.velocity.y = PHYSICS.WORLD.GROUND_LEVEL
 
     // Update position
     const velocityDelta = Vector3Pool.acquire().copy(this.velocity).multiplyScalar(deltaTime)
     const newPosition = Vector3Pool.acquire().copy(this.mesh.position).add(velocityDelta)
-    newPosition.y = 0 // Keep Y position at 0
+    newPosition.y = PHYSICS.WORLD.GROUND_LEVEL // Keep Y position at ground level
     this.mesh.position.copy(newPosition)
     Vector3Pool.release(velocityDelta)
     Vector3Pool.release(newPosition)

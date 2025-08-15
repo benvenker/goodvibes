@@ -1,5 +1,6 @@
 import { RoomEventType } from 'vibescale'
 import { version as pkgVersion } from '../../package.json'
+import { UI } from '../config/constants'
 import { AudioManager } from '../game/AudioManager'
 import { NetworkManager } from '../game/NetworkManager'
 import { UserManager } from '../game/UserManager'
@@ -216,12 +217,12 @@ export class SplashScreen {
     this.networkManager.forceStateUpdate()
     this.audioManager.playBackgroundMusic()
 
-    this.container.style.transition = 'opacity 1s ease'
+    this.container.style.transition = UI.ANIMATIONS.OPACITY_TRANSITION
     this.container.style.opacity = '0'
     setTimeout(() => {
       this.container.remove()
       window.dispatchEvent(new Event('splashScreenDismissed'))
-    }, 1000)
+    }, UI.ANIMATIONS.FADE_DURATION_MS)
   }
 
   public show(): void {

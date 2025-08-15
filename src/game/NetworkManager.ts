@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { RoomEventType } from 'vibescale'
+import { NETWORK } from '../config/constants'
 import { Car } from './Car'
 import { PlayerManager } from './PlayerManager'
 import { UserManager } from './UserManager'
@@ -10,15 +11,15 @@ export class NetworkManager {
     private playerManager: PlayerManager,
     private car: Car,
     private userManager: UserManager,
-    private updateInterval: number = 50
+    private updateInterval: number = NETWORK.UPDATE_INTERVAL_MS
   ) {
     console.log('NetworkManager constructor', { username: this.userManager.getUsername() })
-    this.car.setUsername(this.userManager.getUsername() || 'enpeasea')
+    this.car.setUsername(this.userManager.getUsername() || NETWORK.DEFAULT_USERNAME)
     this.initializeNetworkHandlers()
 
     // Listen for username changes
     this.userManager.on('usernameChanged', (newUsername: string | undefined) => {
-      const username = newUsername || 'enpeasea'
+      const username = newUsername || NETWORK.DEFAULT_USERNAME
       this.car.setUsername(username)
       room.mutatePlayer((player) => {
         player.username = username
@@ -69,9 +70,9 @@ export class NetworkManager {
 
     // Round rotation values to 3 decimal places to prevent floating point noise
     const roundedRotation = {
-      x: Math.round(rotation.x * 1000) / 1000,
-      y: Math.round(rotation.y * 1000) / 1000,
-      z: Math.round(rotation.z * 1000) / 1000,
+      x: Math.round(rotation.x * NETWORK.ROTATION_PRECISION_MULTIPLIER) / NETWORK.ROTATION_PRECISION_MULTIPLIER,
+      y: Math.round(rotation.y * NETWORK.ROTATION_PRECISION_MULTIPLIER) / NETWORK.ROTATION_PRECISION_MULTIPLIER,
+      z: Math.round(rotation.z * NETWORK.ROTATION_PRECISION_MULTIPLIER) / NETWORK.ROTATION_PRECISION_MULTIPLIER,
     }
 
     room.mutatePlayer((player) => {

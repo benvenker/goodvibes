@@ -1,6 +1,11 @@
-import { EventEmitter } from '../utils/EventEmitter'
+import { EventEmitter, EventMap } from '../utils/EventEmitter'
 
-export class UserManager extends EventEmitter {
+// Define the events this class can emit
+interface UserManagerEvents extends EventMap {
+  usernameChanged: [username: string | undefined]
+}
+
+export class UserManager extends EventEmitter<UserManagerEvents> {
   private username: string | undefined
   private static readonly USERNAME_KEY = 'craz_username'
 
