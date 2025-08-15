@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { CAR_MESH } from '../config/constants'
 import { createTextTexture } from './createTextTexture'
 
 /**
@@ -47,25 +48,25 @@ export function updateCarUsername(carGroup: THREE.Group, newUsername: string | u
 
     // Left side name
     createNamePlate(
-      2.2,
-      0.5,
-      new THREE.Vector3(-1.01, 0.5, 0),
+      CAR_MESH.NAME_PLATES.SIDE.WIDTH,
+      CAR_MESH.NAME_PLATES.SIDE.HEIGHT,
+      new THREE.Vector3(CAR_MESH.NAME_PLATES.SIDE.LEFT_X, CAR_MESH.NAME_PLATES.SIDE.Y_POSITION, 0),
       new THREE.Euler(0, -Math.PI / 2, 0)
     )
 
     // Right side name
     createNamePlate(
-      2.2,
-      0.5,
-      new THREE.Vector3(1.01, 0.5, 0),
+      CAR_MESH.NAME_PLATES.SIDE.WIDTH,
+      CAR_MESH.NAME_PLATES.SIDE.HEIGHT,
+      new THREE.Vector3(CAR_MESH.NAME_PLATES.SIDE.RIGHT_X, CAR_MESH.NAME_PLATES.SIDE.Y_POSITION, 0),
       new THREE.Euler(0, Math.PI / 2, 0)
     )
 
     // Hood name
     createNamePlate(
-      1.5,
-      1.5,
-      new THREE.Vector3(0, 0.51, 1),
+      CAR_MESH.NAME_PLATES.HOOD.WIDTH,
+      CAR_MESH.NAME_PLATES.HOOD.HEIGHT,
+      new THREE.Vector3(0, CAR_MESH.NAME_PLATES.HOOD.Y_POSITION, CAR_MESH.NAME_PLATES.HOOD.Z_POSITION),
       new THREE.Euler(-Math.PI / 2, 0, 0)
     )
   }

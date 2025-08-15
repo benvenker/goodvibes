@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { CAR_MESH, UI } from '../config/constants'
 
 export function createTextSprite(text: string): THREE.Sprite {
   // Create a canvas to draw the text
@@ -6,14 +7,14 @@ export function createTextSprite(text: string): THREE.Sprite {
   const context = canvas.getContext('2d')!
 
   // Set canvas size
-  canvas.width = 256
-  canvas.height = 64
+  canvas.width = UI.CANVAS.TEXT_SPRITE.WIDTH
+  canvas.height = UI.CANVAS.TEXT_SPRITE.HEIGHT
 
   // Configure text style
-  context.font = 'Bold 32px Arial'
+  context.font = `Bold ${UI.CANVAS.TEXT_SPRITE.FONT_SIZE}px Arial`
   context.fillStyle = 'white'
   context.strokeStyle = 'black'
-  context.lineWidth = 4
+  context.lineWidth = UI.CANVAS.TEXT_SPRITE.OUTLINE_WIDTH
 
   // Center the text
   context.textAlign = 'center'
@@ -36,7 +37,7 @@ export function createTextSprite(text: string): THREE.Sprite {
   })
 
   const sprite = new THREE.Sprite(spriteMaterial)
-  sprite.scale.set(2, 0.5, 1)
+  sprite.scale.set(CAR_MESH.TEXT_SPRITE.SCALE.x, CAR_MESH.TEXT_SPRITE.SCALE.y, CAR_MESH.TEXT_SPRITE.SCALE.z)
 
   return sprite
 }

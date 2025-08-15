@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { CAR_MESH } from '../config/constants'
 import { createTextTexture } from './createTextTexture'
 
 interface CarMeshOptions {
@@ -161,7 +162,7 @@ export function createCarMesh({
   const carGroup = new THREE.Group()
   carGroup.userData.type = 'player'
 
-  // Add car components
+  // Add car components using helper functions
   carGroup.add(createCarBody(bodyColor))
   carGroup.add(createCarRoof(roofColor))
   

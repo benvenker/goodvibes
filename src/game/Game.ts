@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { ARENA, CAMERA, LIGHTING, RENDERING } from '../config/constants'
 import { CameraController } from '../core/CameraController'
 import { KeyboardControls } from '../core/controls/KeyboardControls'
 import { TouchControls } from '../core/controls/TouchControls'
@@ -76,16 +77,16 @@ export class Game {
 
   private initializeScene(): void {
     this.scene = new THREE.Scene()
-    this.scene.background = new THREE.Color(0x87ceeb)
+    this.scene.background = new THREE.Color(RENDERING.BACKGROUND_COLOR)
   }
 
   private initializeCamera(): void {
-    this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
+    this.camera = new THREE.PerspectiveCamera(CAMERA.FOV, window.innerWidth / window.innerHeight, CAMERA.NEAR_PLANE, CAMERA.FAR_PLANE)
     this.cameraController = new CameraController(this.camera)
   }
 
   private initializeRenderer(): void {
-    this.renderer = new THREE.WebGLRenderer({ antialias: true })
+    this.renderer = new THREE.WebGLRenderer({ antialias: RENDERING.ANTIALIAS })
     this.renderer.setSize(window.innerWidth, window.innerHeight)
     this.renderer.shadowMap.enabled = true
     document.getElementById('game-container')?.appendChild(this.renderer.domElement)
@@ -115,18 +116,18 @@ export class Game {
   }
 
   private initializeGround(): void {
-    const groundGeometry = new THREE.PlaneGeometry(100, 100)
+    const groundGeometry = new THREE.PlaneGeometry(ARENA.GROUND.SIZE, ARENA.GROUND.SIZE)
     const groundMaterial = new THREE.MeshPhongMaterial({
-      color: 0x3e8948,
+      color: ARENA.GROUND.COLOR,
       side: THREE.DoubleSide,
     })
     this.ground = new THREE.Mesh(groundGeometry, groundMaterial)
-    this.ground.rotation.x = Math.PI / 2
+    this.ground.rotation.x = ARENA.GROUND.ROTATION
     this.ground.receiveShadow = true
     this.scene.add(this.ground)
 
-    const gridHelper = new THREE.GridHelper(100, 50, 0x000000, 0x000000)
-    gridHelper.position.y = 0.01
+    const gridHelper = new THREE.GridHelper(ARENA.GRID.SIZE, ARENA.GRID.DIVISIONS, ARENA.GRID.COLOR_CENTER, ARENA.GRID.COLOR_GRID)
+    gridHelper.position.y = ARENA.GRID.Y_POSITION
     this.scene.add(gridHelper)
   }
 
@@ -138,11 +139,11 @@ export class Game {
   }
 
   private initializeLighting(): void {
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6)
+    const ambientLight = new THREE.AmbientLight(0xffffff, LIGHTING.AMBIENT_INTENSITY)
     this.scene.add(ambientLight)
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8)
-    directionalLight.position.set(10, 20, 10)
+    const directionalLight = new THREE.DirectionalLight(0xffffff, LIGHTING.DIRECTIONAL_INTENSITY)
+    directionalLight.position.set(LIGHTING.DIRECTIONAL_POSITION.x, LIGHTING.DIRECTIONAL_POSITION.y, LIGHTING.DIRECTIONAL_POSITION.z)
     directionalLight.castShadow = true
     this.scene.add(directionalLight)
   }
