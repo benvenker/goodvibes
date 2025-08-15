@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { PlayerId } from 'vibescale'
 import { createCarMesh } from '../utils/createCarMesh'
+import { updateCarUsername } from '../utils/updateCarUsername'
 import { AudioManager } from './AudioManager'
 import { Player } from './store'
 
@@ -78,23 +79,9 @@ export class PlayerManager {
       this.audioManager.playCollisionSounds(soundPosition)
     }
 
-    // Update username if changed
+    // Update username if changed (more efficiently)
     if (player.username !== playerObjects.group.userData.username) {
-      // Remove old group from scene
-      this.scene.remove(playerObjects.group)
-
-      // Create new group with updated username
-      const newGroup = createCarMesh({
-        bodyColor: player.color,
-        username: player.username,
-      })
-      newGroup.position.copy(playerObjects.group.position)
-      newGroup.rotation.copy(playerObjects.group.rotation)
-      newGroup.userData.username = player.username
-
-      // Update references
-      playerObjects.group = newGroup
-      this.scene.add(newGroup)
+      updateCarUsername(playerObjects.group, player.username)
     }
 
     // Update interpolation targets

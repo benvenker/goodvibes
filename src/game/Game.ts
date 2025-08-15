@@ -45,14 +45,10 @@ export class Game {
     try {
       this.userManager = new UserManager()
       await this.initializeAudio()
-      this.initializeControls()
-      this.initializeCar()
+      this.initializeGameplay()
       await this.initializeMultiplayer()
-      this.initializeGround()
-      this.initializeObstacles()
-      this.initializeLighting()
-      this.initializeDebugPanel()
-      this.initializeSplashScreen()
+      this.initializeEnvironment()
+      this.initializeUI()
 
       this.isInitialized = true
       this.animate()
@@ -60,6 +56,22 @@ export class Game {
       console.error('Failed to initialize game:', error)
       throw error
     }
+  }
+
+  private initializeGameplay(): void {
+    this.initializeControls()
+    this.initializeCar()
+  }
+
+  private initializeEnvironment(): void {
+    this.initializeGround()
+    this.initializeObstacles()
+    this.initializeLighting()
+  }
+
+  private initializeUI(): void {
+    this.initializeDebugPanel()
+    this.initializeSplashScreen()
   }
 
   private initializeScene(): void {
