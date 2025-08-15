@@ -15,6 +15,7 @@ export class TouchControls {
   private touchStartHandler: (e: TouchEvent) => void
   private touchMoveHandler: (e: TouchEvent) => void
   private touchEndHandler: (e: TouchEvent) => void
+  private touchCancelHandler: (e: TouchEvent) => void
   private mouseMoveHandler: (e: MouseEvent) => void
   private mouseUpHandler: () => void
   private moveJoystickMouseDownHandler: (e: MouseEvent) => void
@@ -28,6 +29,7 @@ export class TouchControls {
     this.touchStartHandler = (e) => this.handleTouchStart(e)
     this.touchMoveHandler = (e) => this.handleTouchMove(e)
     this.touchEndHandler = (e) => this.handleTouchEnd(e)
+    this.touchCancelHandler = (e) => this.handleTouchEnd(e) // Reuse touchEnd logic for cancel
     this.mouseMoveHandler = (e) => this.handleMouseMove(e)
     this.mouseUpHandler = () => this.handleMouseUp()
     this.moveJoystickMouseDownHandler = (e) => this.handleMouseDown(e)
@@ -41,6 +43,7 @@ export class TouchControls {
     document.addEventListener('touchstart', this.touchStartHandler)
     document.addEventListener('touchmove', this.touchMoveHandler)
     document.addEventListener('touchend', this.touchEndHandler)
+    document.addEventListener('touchcancel', this.touchCancelHandler)
   }
 
   private setupMouseEvents(): void {
@@ -189,6 +192,7 @@ export class TouchControls {
     document.removeEventListener('touchstart', this.touchStartHandler)
     document.removeEventListener('touchmove', this.touchMoveHandler)
     document.removeEventListener('touchend', this.touchEndHandler)
+    document.removeEventListener('touchcancel', this.touchCancelHandler)
     
     // Remove mouse event listeners
     this.moveJoystick.removeEventListener('mousedown', this.moveJoystickMouseDownHandler)
