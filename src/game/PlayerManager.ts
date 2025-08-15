@@ -3,6 +3,7 @@ import { PlayerId } from 'vibescale'
 import { createCarMesh } from '../utils/createCarMesh'
 import { AudioManager } from './AudioManager'
 import { Player } from './store'
+import { ResourceManager, Vector3Pool } from '../utils/resourceManager'
 
 interface InterpolationState {
   currentPosition: THREE.Vector3
@@ -80,16 +81,18 @@ export class PlayerManager {
 
     // Update username if changed
     if (player.username !== playerObjects.group.userData.username) {
-      // Remove old group from scene
+      // For now, recreate the mesh with updated username
+      // TODO: Optimize this by updating only the text textures
       this.scene.remove(playerObjects.group)
+      ResourceManager.disposeObject3D(playerObjects.group)
 
       // Create new group with updated username
       const newGroup = createCarMesh({
         bodyColor: player.color,
         username: player.username,
       })
-      newGroup.position.copy(playerObjects.group.position)
-      newGroup.rotation.copy(playerObjects.group.rotation)
+      newGroup.position.copy(interpolationState.currentPosition)
+      newGroup.rotation.setFromVector3(interpolationState.currentRotation)
       newGroup.userData.username = player.username
 
       // Update references
@@ -129,12 +132,39 @@ export class PlayerManager {
     const playerObjects = this.players.get(playerId)
     if (!playerObjects) return
 
+    // Properly dispose of the player's resources
     this.scene.remove(playerObjects.group)
+    ResourceManager.disposeObject3D(playerObjects.group)
+    
+    // Clear interpolation state
+    const interpolationState = this.interpolationStates.get(playerId)
+    if (interpolationState) {
+      Vector3Pool.release(interpolationState.currentPosition)
+      Vector3Pool.release(interpolationState.targetPosition)
+      Vector3Pool.release(interpolationState.currentRotation)
+      Vector3Pool.release(interpolationState.targetRotation)
+    }
+    
     this.players.delete(playerId)
     this.interpolationStates.delete(playerId)
   }
 
   public getPlayers(): Map<PlayerId, PlayerObjects> {
     return this.players
+  }
+
+  /**
+   * Dispose of all resources
+   */
+  public dispose(): void {
+    // Remove and dispose all players
+    for (const [playerId] of this.players) {
+      this.removePlayer(playerId)
+    }
+    
+    // Clear all maps
+    this.players.clear()
+    this.interpolationStates.clear()
+    this.audioManager = undefined
   }
 }

@@ -3,6 +3,7 @@ import { CarPhysicsConfig, defaultCarPhysics } from '../config/carPhysics'
 import type { JoystickState } from '../core/controls/TouchControls'
 import { createCarMesh } from '../utils/createCarMesh'
 import { AudioManager } from './AudioManager'
+import { ResourceManager, Vector3Pool } from '../utils/resourceManager'
 
 export class Car {
   private mesh: THREE.Group
@@ -74,8 +75,11 @@ export class Car {
           // Only apply bounce effects if impact is significant
           if (Math.abs(this.velocity.x) > IMPACT_VELOCITY_THRESHOLD) {
             collided = true
-            collisionPoint = obj.position.clone()
-            collisionPoint.y = 1
+            // Release old collision point if exists
+            if (this.lastCollisionPoint) {
+              Vector3Pool.release(this.lastCollisionPoint)
+            }
+            collisionPoint = Vector3Pool.acquire(obj.position.x, 1, obj.position.z)
             this.lastCollisionPoint = collisionPoint
             this.velocity.x *= -this.physics.bounceRestitution
           } else {
@@ -89,8 +93,11 @@ export class Car {
           // Only apply bounce effects if impact is significant
           if (Math.abs(this.velocity.z) > IMPACT_VELOCITY_THRESHOLD) {
             collided = true
-            collisionPoint = obj.position.clone()
-            collisionPoint.y = 1
+            // Release old collision point if exists
+            if (this.lastCollisionPoint) {
+              Vector3Pool.release(this.lastCollisionPoint)
+            }
+            collisionPoint = Vector3Pool.acquire(obj.position.x, 1, obj.position.z)
             this.lastCollisionPoint = collisionPoint
             this.velocity.z *= -this.physics.bounceRestitution
           } else {
@@ -121,8 +128,11 @@ export class Car {
           // Only apply bounce effects if impact is significant
           if (Math.abs(this.velocity.x) > IMPACT_VELOCITY_THRESHOLD) {
             collided = true
-            collisionPoint = otherCar.position.clone()
-            collisionPoint.y = 1
+            // Release old collision point if exists
+            if (this.lastCollisionPoint) {
+              Vector3Pool.release(this.lastCollisionPoint)
+            }
+            collisionPoint = Vector3Pool.acquire(otherCar.position.x, 1, otherCar.position.z)
             this.lastCollisionPoint = collisionPoint
             this.velocity.x *= -this.physics.bounceRestitution
           } else {
@@ -136,8 +146,11 @@ export class Car {
           // Only apply bounce effects if impact is significant
           if (Math.abs(this.velocity.z) > IMPACT_VELOCITY_THRESHOLD) {
             collided = true
-            collisionPoint = otherCar.position.clone()
-            collisionPoint.y = 1
+            // Release old collision point if exists
+            if (this.lastCollisionPoint) {
+              Vector3Pool.release(this.lastCollisionPoint)
+            }
+            collisionPoint = Vector3Pool.acquire(otherCar.position.x, 1, otherCar.position.z)
             this.lastCollisionPoint = collisionPoint
             this.velocity.z *= -this.physics.bounceRestitution
           } else {
@@ -295,5 +308,26 @@ export class Car {
 
   public setPosition(position: THREE.Vector3): void {
     this.mesh.position.copy(position)
+  }
+
+  /**
+   * Dispose of all resources used by this car
+   */
+  public dispose(): void {
+    // Dispose of the mesh and all its children
+    ResourceManager.disposeObject3D(this.mesh)
+    
+    // Clear references
+    this.polls = []
+    this.obstacles = []
+    this.walls = []
+    this.otherPlayers.clear()
+    this.audioManager = undefined
+    
+    // Release Vector3 instances if using pooling
+    if (this.lastCollisionPoint) {
+      Vector3Pool.release(this.lastCollisionPoint)
+      this.lastCollisionPoint = undefined
+    }
   }
 }

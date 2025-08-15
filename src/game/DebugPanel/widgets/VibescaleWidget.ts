@@ -11,6 +11,14 @@ export class VibescaleWidget {
   private bytesDiv!: HTMLDivElement
   private msgsDiv!: HTMLDivElement
   private userInfoDiv!: HTMLDivElement
+  
+  // Cached DOM references for frequent updates
+  private bytesInSpan!: HTMLSpanElement
+  private bytesOutSpan!: HTMLSpanElement
+  private msgsInSpan!: HTMLSpanElement
+  private msgsOutSpan!: HTMLSpanElement
+  private totalMsgsInSpan!: HTMLSpanElement
+  private totalMsgsOutSpan!: HTMLSpanElement
 
   // Network metrics tracking
   private lastMetricsUpdate = performance.now()
@@ -70,24 +78,54 @@ export class VibescaleWidget {
     // Total messages
     this.totalMsgsDiv = document.createElement('div')
     this.totalMsgsDiv.style.marginBottom = '5px'
-    this.totalMsgsDiv.innerHTML =
-      'Total msgs in: <span id="total-msgs-in">0</span><br>Total msgs out: <span id="total-msgs-out">0</span>'
+    this.totalMsgsInSpan = document.createElement('span')
+    this.totalMsgsInSpan.textContent = '0'
+    this.totalMsgsOutSpan = document.createElement('span')
+    this.totalMsgsOutSpan.textContent = '0'
+    this.totalMsgsDiv.innerHTML = 'Total msgs in: '
+    this.totalMsgsDiv.appendChild(this.totalMsgsInSpan)
+    this.totalMsgsDiv.innerHTML += '<br>Total msgs out: '
+    this.totalMsgsDiv.appendChild(this.totalMsgsOutSpan)
     this.statsContainer.appendChild(this.totalMsgsDiv)
 
     // Bytes stats
     this.bytesDiv = document.createElement('div')
     this.bytesDiv.style.marginBottom = '5px'
-    this.bytesDiv.innerHTML = 'KB/s in: <span id="bytes-in">0</span>'
+    this.bytesInSpan = document.createElement('span')
+    this.bytesInSpan.textContent = '0'
+    this.bytesOutSpan = document.createElement('span')
+    this.bytesOutSpan.textContent = '0'
+    
+    const bytesInLabel = document.createElement('span')
+    bytesInLabel.textContent = 'KB/s in: '
+    this.bytesDiv.appendChild(bytesInLabel)
+    this.bytesDiv.appendChild(this.bytesInSpan)
     this.bytesDiv.appendChild(this.bytesInSparkline.getElement())
-    this.bytesDiv.innerHTML += '<br>KB/s out: <span id="bytes-out">0</span>'
+    
+    const bytesOutLabel = document.createElement('span')
+    bytesOutLabel.innerHTML = '<br>KB/s out: '
+    this.bytesDiv.appendChild(bytesOutLabel)
+    this.bytesDiv.appendChild(this.bytesOutSpan)
     this.bytesDiv.appendChild(this.bytesOutSparkline.getElement())
     this.statsContainer.appendChild(this.bytesDiv)
 
     // Messages stats
     this.msgsDiv = document.createElement('div')
-    this.msgsDiv.innerHTML = 'Msgs/s in: <span id="msgs-in">0</span>'
+    this.msgsInSpan = document.createElement('span')
+    this.msgsInSpan.textContent = '0'
+    this.msgsOutSpan = document.createElement('span')
+    this.msgsOutSpan.textContent = '0'
+    
+    const msgsInLabel = document.createElement('span')
+    msgsInLabel.textContent = 'Msgs/s in: '
+    this.msgsDiv.appendChild(msgsInLabel)
+    this.msgsDiv.appendChild(this.msgsInSpan)
     this.msgsDiv.appendChild(this.msgsInSparkline.getElement())
-    this.msgsDiv.innerHTML += '<br>Msgs/s out: <span id="msgs-out">0</span>'
+    
+    const msgsOutLabel = document.createElement('span')
+    msgsOutLabel.innerHTML = '<br>Msgs/s out: '
+    this.msgsDiv.appendChild(msgsOutLabel)
+    this.msgsDiv.appendChild(this.msgsOutSpan)
     this.msgsDiv.appendChild(this.msgsOutSparkline.getElement())
     this.statsContainer.appendChild(this.msgsDiv)
 
@@ -160,13 +198,13 @@ export class VibescaleWidget {
       this.msgsInSparkline.addValue(avgMsgsIn)
       this.msgsOutSparkline.addValue(avgMsgsOut)
 
-      // Update displays
-      document.getElementById('bytes-in')!.textContent = (avgBytesIn / 1024).toFixed(1)
-      document.getElementById('bytes-out')!.textContent = (avgBytesOut / 1024).toFixed(1)
-      document.getElementById('msgs-in')!.textContent = avgMsgsIn.toFixed(1)
-      document.getElementById('msgs-out')!.textContent = avgMsgsOut.toFixed(1)
-      document.getElementById('total-msgs-in')!.textContent = this.totalMsgsIn.toString()
-      document.getElementById('total-msgs-out')!.textContent = this.totalMsgsOut.toString()
+      // Update displays using cached references
+      this.bytesInSpan.textContent = (avgBytesIn / 1024).toFixed(1)
+      this.bytesOutSpan.textContent = (avgBytesOut / 1024).toFixed(1)
+      this.msgsInSpan.textContent = avgMsgsIn.toFixed(1)
+      this.msgsOutSpan.textContent = avgMsgsOut.toFixed(1)
+      this.totalMsgsInSpan.textContent = this.totalMsgsIn.toString()
+      this.totalMsgsOutSpan.textContent = this.totalMsgsOut.toString()
 
       // Update user info
       this.userInfoDiv.innerHTML =

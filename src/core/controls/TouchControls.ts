@@ -10,25 +10,44 @@ export class TouchControls {
   private rotateState: JoystickState = { x: 0, y: 0 }
   private activeTouches: Map<number, { joystick: HTMLElement; startX: number; startY: number }> = new Map()
   private activeMouseJoystick: { joystick: HTMLElement; startX: number; startY: number } | null = null
+  
+  // Event handlers for cleanup
+  private touchStartHandler: (e: TouchEvent) => void
+  private touchMoveHandler: (e: TouchEvent) => void
+  private touchEndHandler: (e: TouchEvent) => void
+  private mouseMoveHandler: (e: MouseEvent) => void
+  private mouseUpHandler: () => void
+  private moveJoystickMouseDownHandler: (e: MouseEvent) => void
+  private rotateJoystickMouseDownHandler: (e: MouseEvent) => void
 
   constructor() {
     this.moveJoystick = document.getElementById('move-joystick') as HTMLElement
     this.rotateJoystick = document.getElementById('rotate-joystick') as HTMLElement
+    
+    // Bind event handlers
+    this.touchStartHandler = (e) => this.handleTouchStart(e)
+    this.touchMoveHandler = (e) => this.handleTouchMove(e)
+    this.touchEndHandler = (e) => this.handleTouchEnd(e)
+    this.mouseMoveHandler = (e) => this.handleMouseMove(e)
+    this.mouseUpHandler = () => this.handleMouseUp()
+    this.moveJoystickMouseDownHandler = (e) => this.handleMouseDown(e)
+    this.rotateJoystickMouseDownHandler = (e) => this.handleMouseDown(e)
+    
     this.setupTouchEvents()
     this.setupMouseEvents()
   }
 
   private setupTouchEvents(): void {
-    document.addEventListener('touchstart', (e) => this.handleTouchStart(e))
-    document.addEventListener('touchmove', (e) => this.handleTouchMove(e))
-    document.addEventListener('touchend', (e) => this.handleTouchEnd(e))
+    document.addEventListener('touchstart', this.touchStartHandler)
+    document.addEventListener('touchmove', this.touchMoveHandler)
+    document.addEventListener('touchend', this.touchEndHandler)
   }
 
   private setupMouseEvents(): void {
-    this.moveJoystick.addEventListener('mousedown', (e) => this.handleMouseDown(e))
-    this.rotateJoystick.addEventListener('mousedown', (e) => this.handleMouseDown(e))
-    document.addEventListener('mousemove', (e) => this.handleMouseMove(e))
-    document.addEventListener('mouseup', () => this.handleMouseUp())
+    this.moveJoystick.addEventListener('mousedown', this.moveJoystickMouseDownHandler)
+    this.rotateJoystick.addEventListener('mousedown', this.rotateJoystickMouseDownHandler)
+    document.addEventListener('mousemove', this.mouseMoveHandler)
+    document.addEventListener('mouseup', this.mouseUpHandler)
   }
 
   private handleMouseDown(e: MouseEvent): void {
@@ -163,5 +182,22 @@ export class TouchControls {
 
   public getRotateState(): JoystickState {
     return this.rotateState
+  }
+
+  public dispose(): void {
+    // Remove touch event listeners
+    document.removeEventListener('touchstart', this.touchStartHandler)
+    document.removeEventListener('touchmove', this.touchMoveHandler)
+    document.removeEventListener('touchend', this.touchEndHandler)
+    
+    // Remove mouse event listeners
+    this.moveJoystick.removeEventListener('mousedown', this.moveJoystickMouseDownHandler)
+    this.rotateJoystick.removeEventListener('mousedown', this.rotateJoystickMouseDownHandler)
+    document.removeEventListener('mousemove', this.mouseMoveHandler)
+    document.removeEventListener('mouseup', this.mouseUpHandler)
+    
+    // Clear state
+    this.activeTouches.clear()
+    this.activeMouseJoystick = null
   }
 }
